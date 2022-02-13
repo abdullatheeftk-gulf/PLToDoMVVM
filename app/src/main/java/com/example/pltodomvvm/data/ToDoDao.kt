@@ -14,6 +14,6 @@ interface ToDoDao {
     @Query("SELECT * FROM ToDo WHERE id = :id")
     suspend fun getToDo(id:Int):ToDo?
 
-    @Query("SELECT * FROM ToDo")
+    @Query("SELECT * FROM ToDo ORDER BY  isDone ASC,id DESC")
     fun getTodos():Flow<List<ToDo>>
 }
