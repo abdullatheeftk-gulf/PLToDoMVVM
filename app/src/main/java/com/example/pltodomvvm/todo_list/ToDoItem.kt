@@ -1,5 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
@@ -31,6 +32,7 @@ fun ToDoItem(
     var openDialog by remember {
         mutableStateOf(false)
     }
+
 
 
 
