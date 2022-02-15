@@ -8,7 +8,7 @@ interface ToDoRepository {
 
     suspend fun deleteToDo(toDo: ToDo)
 
-    suspend fun getToDo(id:Int):ToDo?
+    suspend fun getToDoById(id:Int):ToDo?
 
     fun getTodos(): Flow<List<ToDo>>
 }

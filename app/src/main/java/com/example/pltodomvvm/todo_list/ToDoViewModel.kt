@@ -3,7 +3,6 @@ package com.example.pltodomvvm.todo_list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.Routes
@@ -21,6 +20,7 @@ class ToDoViewModel @Inject constructor(
     private val repository: ToDoRepository
 ):ViewModel() {
 
+
     val toDos:Flow<List<ToDo>> = repository.getTodos()
 
     private val _uiEvent = Channel<UiEvent>()
@@ -28,14 +28,14 @@ class ToDoViewModel @Inject constructor(
 
     private var deleteToDo:ToDo? = null
 
-    fun onEvent(event:ToDoListEvent){
-        when(event){
+    fun onEvent(toDoListEvent:ToDoListEvent){
+        when(toDoListEvent){
             is ToDoListEvent.DeleteToDo ->{
                 viewModelScope.launch {
-                    deleteToDo=event.toDo
-                    repository.deleteToDo(event.toDo)
+                    deleteToDo=toDoListEvent.toDo
+                    repository.deleteToDo(toDoListEvent.toDo)
                     sendUiEvent(UiEvent.ShowSnackBar(
-                        message = "ToDo deleted: ${event.toDo.title}",
+                        message = "ToDo deleted: ${toDoListEvent.toDo.title}",
                         action = "Undo"
                     ))
                 }
@@ -43,14 +43,14 @@ class ToDoViewModel @Inject constructor(
             is ToDoListEvent.OnDoneChange ->{
                 viewModelScope.launch {
                     repository.insertToDo(
-                        event.toDo.copy(
-                            isDone = event.isDone
+                        toDoListEvent.toDo.copy(
+                            isDone = toDoListEvent.isDone
                         )
                     )
                 }
             }
             is ToDoListEvent.OnToDoClick ->{
-                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoid=${event.toDo.id}"))
+                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoId=${toDoListEvent.toDo.id}"))
             }
             is ToDoListEvent.OnUndoClick ->{
                 viewModelScope.launch {
@@ -66,6 +66,10 @@ class ToDoViewModel @Inject constructor(
         }
     }
 
+    init {
+        Log.d(TAG, ":todoViewmodel init ")
+    }
+
     private fun sendUiEvent(event: UiEvent){
         viewModelScope.launch {
             _uiEvent.send(event)
@@ -75,7 +79,7 @@ class ToDoViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        Log.i(TAG, " viewModel onCleared: ")
+        Log.i(TAG, "ToDo viewModel onCleared: ")
     }
 
 }

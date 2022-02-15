@@ -13,8 +13,8 @@ class ToDoRepositoryImpl(
         toDoDao.deleteToDo(toDo=toDo)
     }
 
-    override suspend fun getToDo(id: Int): ToDo? {
-        return toDoDao.getToDo(id=id)
+    override suspend fun getToDoById(id: Int): ToDo? {
+        return toDoDao.getToDoById(id=id)
     }
 
     override fun getTodos(): Flow<List<ToDo>> {
