@@ -7,22 +7,42 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.pltodomvvm.components.ShowAlertDialog
 import com.example.pltodomvvm.data.ToDo
+import com.example.pltodomvvm.util.UiEvent
+import kotlinx.coroutines.flow.collect
 
 
 @Composable
 fun ToDoItem(
     toDo: ToDo,
     onEvent: (event: ToDoListEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
 ) {
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+
+
+    ShowAlertDialog(
+        title = "Do You want to delete ${toDo.title}",
+        message = "You are going to remove this",
+        openDialog = openDialog,
+        onCloseClicked = { openDialog = false  }
+    ) {
+        onEvent(ToDoListEvent.DeleteToDo(toDo = toDo))
+    }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
@@ -39,7 +59,7 @@ fun ToDoItem(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = {
-                    onEvent(ToDoListEvent.DeleteToDo(toDo = toDo))
+                    openDialog = true
                 }) {
                     Icon(
                         imageVector = Icons.Default.Delete,

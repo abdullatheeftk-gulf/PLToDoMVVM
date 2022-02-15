@@ -10,12 +10,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.pltodomvvm.components.ShowAlertDialog
 import com.example.pltodomvvm.util.UiEvent
 import kotlinx.coroutines.flow.collect
 
@@ -24,6 +23,7 @@ fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
+
     val scaffoldState = rememberScaffoldState()
     val todos = viewModel.toDos.collectAsState(initial = emptyList())
     LaunchedEffect(key1 = true) {
@@ -41,10 +41,13 @@ fun ToDoListScreen(
                 is UiEvent.Navigate -> {
                     onNavigate(value)
                 }
+
                 else -> Unit
             }
         }
     }
+
+
 
     Scaffold(
         scaffoldState = scaffoldState,

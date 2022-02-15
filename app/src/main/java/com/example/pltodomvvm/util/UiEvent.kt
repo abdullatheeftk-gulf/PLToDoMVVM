@@ -9,5 +9,4 @@ sealed class UiEvent{
     val action:String? = null
     ):UiEvent()
 
-
 }

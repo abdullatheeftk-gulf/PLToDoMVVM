@@ -30,6 +30,7 @@ class ToDoViewModel @Inject constructor(
 
     fun onEvent(toDoListEvent:ToDoListEvent){
         when(toDoListEvent){
+
             is ToDoListEvent.DeleteToDo ->{
                 viewModelScope.launch {
                     deleteToDo=toDoListEvent.toDo
