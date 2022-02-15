@@ -27,23 +27,8 @@ fun ToDoItem(
     toDo: ToDo,
     onEvent: (event: ToDoListEvent) -> Unit,
     modifier: Modifier = Modifier,
-
+    onDeleteIconClicked:(toDo:ToDo)->Unit
 ) {
-    var openDialog by remember {
-        mutableStateOf(false)
-    }
-
-
-
-
-    ShowAlertDialog(
-        title = "Do You want to delete ${toDo.title}",
-        message = "You are going to remove this",
-        openDialog = openDialog,
-        onCloseClicked = { openDialog = false  }
-    ) {
-        onEvent(ToDoListEvent.DeleteToDo(toDo = toDo))
-    }
 
     Row(
         modifier = modifier,
@@ -61,7 +46,7 @@ fun ToDoItem(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = {
-                    openDialog = true
+                   onDeleteIconClicked(toDo)
                 }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -88,6 +73,7 @@ fun ToDoItem(
 
 }
 
+/*
 @Preview
 @Composable
 private fun ToDoItemPreview() {
@@ -97,4 +83,4 @@ private fun ToDoItemPreview() {
 
         }
     )
-}
+}*/

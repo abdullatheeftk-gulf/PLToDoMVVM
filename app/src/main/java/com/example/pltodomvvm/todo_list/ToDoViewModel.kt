@@ -1,6 +1,8 @@
 package com.example.pltodomvvm.todo_list
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
@@ -10,6 +12,7 @@ import com.example.pltodomvvm.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +23,11 @@ class ToDoViewModel @Inject constructor(
     private val repository: ToDoRepository
 ):ViewModel() {
 
+    private val _openFag = mutableStateOf(false)
+    val openFlag = _openFag
+
+    private val _toDoForDelete:MutableState<ToDo?> = mutableStateOf(null)
+    val toDoForDelete = _toDoForDelete
 
     val toDos:Flow<List<ToDo>> = repository.getTodos()
 

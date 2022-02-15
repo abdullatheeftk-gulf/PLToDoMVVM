@@ -1,5 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
+import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.util.UiEvent
 import kotlinx.coroutines.flow.collect
 
@@ -23,6 +25,25 @@ fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
+    Log.w("TAG", "start ", )
+
+    val toDoForDelete:ToDo? by viewModel.toDoForDelete
+
+    val openDialogFlag by viewModel.openFlag
+
+    var openDialog by remember {
+        mutableStateOf(openDialogFlag)
+    }
+
+    LaunchedEffect(key1 = openDialog){
+        Log.i("TAG", "ToDoListScreen: $openDialog ")
+        viewModel.openFlag.value = openDialog
+    }
+
+
+
+
+
 
     val scaffoldState = rememberScaffoldState()
     val todos = viewModel.toDos.collectAsState(initial = emptyList())
@@ -45,6 +66,20 @@ fun ToDoListScreen(
                 else -> Unit
             }
         }
+    }
+
+    ShowAlertDialog(
+        title = "Do you want to delete ${toDoForDelete?.title}",
+        message = "I will erase from your database",
+        openDialog = openDialog,
+        onCloseClicked = {
+            openDialog = false
+        }) {
+           toDoForDelete?.let {
+               viewModel.onEvent(ToDoListEvent.DeleteToDo(it))
+           }
+
+           openDialog = false
     }
 
 
@@ -71,8 +106,13 @@ fun ToDoListScreen(
                         .clickable {
                             viewModel.onEvent(ToDoListEvent.OnToDoClick(toDo = toDo))
                         }
-                        .padding(16.dp)
-                )
+                        .padding(16.dp),
+                ){mToDo ->
+                    Log.d("TAG", "deleteToDo: $mToDo")
+                    viewModel.toDoForDelete.value = mToDo
+                    openDialog = true
+
+                }
             }
         }
 
