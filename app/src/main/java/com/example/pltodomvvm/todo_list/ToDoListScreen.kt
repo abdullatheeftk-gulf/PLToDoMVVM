@@ -31,7 +31,6 @@ fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
-    Log.w("TAG", "start ")
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
 
@@ -42,25 +41,13 @@ fun ToDoListScreen(
     }
 
     LaunchedEffect(key1 = openDialog) {
-        //Log.i("TAG", "ToDoListScreen: $openDialog ")
         viewModel.openFlag.value = openDialog
     }
 
 
     val allToDos by viewModel.allToDos.collectAsState()
 
-/*    if (allToDos is RequestState.Success) {
-        val myDos = (allToDos as RequestState.Success<List<ToDo>>).data
-        Log.i(TAG, "all todos: $myDos")
-    } else if (allToDos is RequestState.Loading) {
-        Log.d(TAG, "loading: ")
-    } else {
-        Log.i(TAG, "all todos: ")
-    }*/
-
-
     val scaffoldState = rememberScaffoldState()
-   // val todos = viewModel.toDos.collectAsState(initial = emptyList())
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { value: UiEvent ->
             when (value) {
@@ -127,13 +114,15 @@ fun ToDoListScreen(
                                     viewModel.onEvent(ToDoListEvent.OnToDoClick(toDo = toDo))
                                 }
                                 .padding(16.dp)
-                                .animateItemPlacement(animationSpec = tween(300)),
+                                .animateItemPlacement(
+                                    animationSpec = tween(
+                                        300
+                                    )
+                                ),
                         ) { mToDo ->
-                            Log.d("TAG", "deleteToDo: $mToDo")
                             viewModel.toDoForDelete.value = mToDo
                             openDialog = true
                             scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-
                         }
                     }
                 }

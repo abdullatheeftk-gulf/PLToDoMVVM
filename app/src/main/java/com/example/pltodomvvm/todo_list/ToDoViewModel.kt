@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.RequestState
+import com.example.pltodomvvm.util.RequestState1
 import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,21 +26,17 @@ class ToDoViewModel @Inject constructor(
     private val _openFag = mutableStateOf(false)
     val openFlag = _openFag
 
-    private val _openFlag = MutableStateFlow(false)
-    val openFlags = _openFlag.asStateFlow()
-
     private val _toDoForDelete:MutableState<ToDo?> = mutableStateOf(null)
     val toDoForDelete = _toDoForDelete
 
-    val toDos:Flow<List<ToDo>> = repository.getTodos()
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
     private var deleteToDo:ToDo? = null
 
-    private var _allToDos = MutableStateFlow<RequestState<List<ToDo>>>(RequestState.Idle)
-    val allToDos:StateFlow<RequestState<List<ToDo>>> = _allToDos
+    private var _allToDos = MutableStateFlow(RequestState1)
+    val allToDos:StateFlow<RequestState1> = _allToDos
 
     init {
         getAllToDos()
@@ -47,13 +44,12 @@ class ToDoViewModel @Inject constructor(
 
 
     private fun getAllToDos(){
-        _allToDos.value = RequestState.Loading
+        _allToDos.value = RequestState1.Loading
         try {
             viewModelScope.launch {
                 repository.getTodos().collect {
                     _allToDos.value = RequestState.Success(it)
                 }
-
             }
         }catch (e:Exception){
             _allToDos.value = RequestState.Error<java.lang.Exception>(e)
