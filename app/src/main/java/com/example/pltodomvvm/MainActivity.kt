@@ -3,6 +3,8 @@ package com.example.pltodomvvm
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,14 +13,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.pltodomvvm.add_edit_todo.AddEditToDoScreen
 import com.example.pltodomvvm.todo_list.ToDoListScreen
+import com.example.pltodomvvm.todo_list.ToDoViewModel
 import com.example.pltodomvvm.ui.theme.PLToDoMVVMTheme
 import com.example.pltodomvvm.util.Routes
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity"
 
+
+@ExperimentalFoundationApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
