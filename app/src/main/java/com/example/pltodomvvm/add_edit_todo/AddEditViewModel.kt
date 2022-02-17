@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val TAG = "ToDoViewModel"
+private const val TAG = "AddEditViewModel"
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val repository: ToDoRepository,
@@ -37,19 +37,22 @@ class AddEditViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
-        Log.i(TAG, "addViewmodel: ")
+       // Log.i(TAG, "addViewModel: ")
         val toDoId = savedStateHandle.get<Int>("todoId")!!
-        Log.i(TAG, ":$toDoId ")
+       // Log.i(TAG, ":$toDoId ")
         if (toDoId != -1) {
             Log.e(TAG, ":$toDoId", )
             viewModelScope.launch {
                 repository.getToDoById(id = toDoId)?.let { toDo ->
                     title = toDo.title
                     description = toDo.description ?: ""
-                    this@AddEditViewModel.todo = todo
+                    this@AddEditViewModel.todo = toDo
+                    Log.i(TAG, ": $todo $title $description")
                 }
             }
+
         }
+
     }
 
     fun onEvent(addEditToDoEvent: AddEditToDoEvent) {
@@ -71,14 +74,12 @@ class AddEditViewModel @Inject constructor(
                       ))
                       return@launch
                   }
-                  repository.insertToDo(
-                      toDo = ToDo(
-                          title = title,
-                          description = description,
-                          isDone = todo?.isDone ?:false,
-                          id = todo?.id
-                      )
-                  )
+                    todo?.let {
+                        repository.insertToDo(
+                            toDo = it.copy(title = title, description = description)
+                        )
+                    }
+
                     sendUiEvent(UiEvent.PopBackStack)
                 }
             }
@@ -91,7 +92,7 @@ class AddEditViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        Log.e(TAG, "onCleared: add", )
+       // Log.e(TAG, "onCleared: add", )
         super.onCleared()
     }
 }
