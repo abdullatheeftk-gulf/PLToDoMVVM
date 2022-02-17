@@ -31,7 +31,6 @@ class ToDoViewModel @Inject constructor(
     private val _toDoForDelete:MutableState<ToDo?> = mutableStateOf(null)
     val toDoForDelete = _toDoForDelete
 
-    val toDos:Flow<List<ToDo>> = repository.getTodos()
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
