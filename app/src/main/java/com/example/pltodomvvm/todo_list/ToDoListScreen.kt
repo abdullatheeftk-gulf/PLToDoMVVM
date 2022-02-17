@@ -9,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ fun ToDoListScreen(
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
     val lazyColumnState= remember {
-        mutableStateOf(LazyListState())
+      mutableStateOf(LazyListState())
     }
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
@@ -41,9 +42,7 @@ fun ToDoListScreen(
     }
 
     LaunchedEffect(key1 = openDialog) {
-        /*toDoForDelete?.let {
-            lazyColumnState = LazyListState(it.id!!-25)
-        }*/
+
         viewModel.openFlag.value = openDialog
     }
     val allToDos by viewModel.allToDos.collectAsState()
