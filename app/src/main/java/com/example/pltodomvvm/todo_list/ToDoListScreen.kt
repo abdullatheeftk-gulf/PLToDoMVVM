@@ -1,13 +1,10 @@
 package com.example.pltodomvvm.todo_list
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -31,7 +28,8 @@ fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
-    Log.w("TAG", "start ")
+    val lazyColumnState = LazyListState()
+
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
 
@@ -42,25 +40,11 @@ fun ToDoListScreen(
     }
 
     LaunchedEffect(key1 = openDialog) {
-        //Log.i("TAG", "ToDoListScreen: $openDialog ")
         viewModel.openFlag.value = openDialog
     }
-
-
     val allToDos by viewModel.allToDos.collectAsState()
 
-/*    if (allToDos is RequestState.Success) {
-        val myDos = (allToDos as RequestState.Success<List<ToDo>>).data
-        Log.i(TAG, "all todos: $myDos")
-    } else if (allToDos is RequestState.Loading) {
-        Log.d(TAG, "loading: ")
-    } else {
-        Log.i(TAG, "all todos: ")
-    }*/
-
-
     val scaffoldState = rememberScaffoldState()
-   // val todos = viewModel.toDos.collectAsState(initial = emptyList())
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { value: UiEvent ->
             when (value) {
@@ -92,30 +76,32 @@ fun ToDoListScreen(
         toDoForDelete?.let {
             viewModel.onEvent(ToDoListEvent.DeleteToDo(it))
         }
-
-
         openDialog = false
     }
-
-
 
     Scaffold(
         scaffoldState = scaffoldState,
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.onEvent(ToDoListEvent.OnAddToDoClick)
+
             }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add ToDo")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add ToDo"
+                )
             }
         }
     ) {
         if (allToDos is RequestState.Success) {
             val todos = (allToDos as RequestState.Success<List<ToDo>>).data
-            if(todos.isNotEmpty()) {
+            if (todos.isNotEmpty()) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    state = lazyColumnState
                 ) {
-                    items(items=todos, key = {
+
+                    items(items = todos, key = {
                         it.id!!
                     }) { toDo ->
                         ToDoItem(
@@ -129,7 +115,6 @@ fun ToDoListScreen(
                                 .padding(16.dp)
                                 .animateItemPlacement(animationSpec = tween(300)),
                         ) { mToDo ->
-                            Log.d("TAG", "deleteToDo: $mToDo")
                             viewModel.toDoForDelete.value = mToDo
                             openDialog = true
                             scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
@@ -137,7 +122,7 @@ fun ToDoListScreen(
                         }
                     }
                 }
-            }else{
+            } else {
                 Column(
                     Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -146,7 +131,7 @@ fun ToDoListScreen(
                     Text(text = "Empty list")
                 }
             }
-        }else if(allToDos is RequestState.Loading){
+        } else if (allToDos is RequestState.Loading) {
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,

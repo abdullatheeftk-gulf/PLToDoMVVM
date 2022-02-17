@@ -34,9 +34,23 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = Routes.TODO_LIST,
+                    startDestination = Routes.SPLASH_SCREEN,
                 ) {
-                    composable(Routes.TODO_LIST) {
+                    composable(route = Routes.SPLASH_SCREEN){
+                        SplashScreen {
+                            navController.navigate(
+                                route = Routes.TODO_LIST,
+                            ){
+                                popUpTo(Routes.SPLASH_SCREEN){
+                                    inclusive = true
+                                }
+                            }
+                        }
+
+
+                    }
+
+                    composable(route=Routes.TODO_LIST) {
                         ToDoListScreen(onNavigate = {
                             navController.navigate(it.route)
                         }

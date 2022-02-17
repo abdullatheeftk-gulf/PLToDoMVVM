@@ -12,14 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.pltodomvvm.components.ShowAlertDialog
+
 import com.example.pltodomvvm.data.ToDo
-import com.example.pltodomvvm.util.UiEvent
-import kotlinx.coroutines.flow.collect
+
+
 
 
 @Composable
@@ -29,6 +28,8 @@ fun ToDoItem(
     modifier: Modifier = Modifier,
     onDeleteIconClicked:(toDo:ToDo)->Unit
 ) {
+
+
 
     Row(
         modifier = modifier,
