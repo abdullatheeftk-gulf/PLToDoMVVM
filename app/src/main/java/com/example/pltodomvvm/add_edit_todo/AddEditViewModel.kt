@@ -38,17 +38,13 @@ class AddEditViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
-        // Log.i(TAG, "addViewModel: ")
         val toDoId = savedStateHandle.get<Int>("todoId")!!
-        // Log.i(TAG, ":$toDoId ")
         if (toDoId != -1) {
-            Log.e(TAG, ":$toDoId")
             viewModelScope.launch {
                 repository.getToDoById(id = toDoId)?.let { toDo ->
                     title = toDo.title
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo
-                    Log.i(TAG, ": $todo $title $description")
                 }
             }
 
@@ -99,7 +95,6 @@ private fun sendUiEvent(event: UiEvent) {
 }
 
 override fun onCleared() {
-    // Log.e(TAG, "onCleared: add", )
     super.onCleared()
 }
 }
