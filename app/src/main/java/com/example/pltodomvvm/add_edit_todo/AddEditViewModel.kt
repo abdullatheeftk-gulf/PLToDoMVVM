@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "AddEditViewModel"
+
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val repository: ToDoRepository,
@@ -37,11 +38,11 @@ class AddEditViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
-       // Log.i(TAG, "addViewModel: ")
+        // Log.i(TAG, "addViewModel: ")
         val toDoId = savedStateHandle.get<Int>("todoId")!!
-       // Log.i(TAG, ":$toDoId ")
+        // Log.i(TAG, ":$toDoId ")
         if (toDoId != -1) {
-            Log.e(TAG, ":$toDoId", )
+            Log.e(TAG, ":$toDoId")
             viewModelScope.launch {
                 repository.getToDoById(id = toDoId)?.let { toDo ->
                     title = toDo.title
@@ -68,31 +69,37 @@ class AddEditViewModel @Inject constructor(
 
             is AddEditToDoEvent.OnSaveToDoClick -> {
                 viewModelScope.launch {
-                  if(title.isBlank()){
-                      sendUiEvent(UiEvent.ShowSnackBar(
-                          message = "The title can't empty"
-                      ))
-                      return@launch
-                  }
-                    todo?.let {
-                        repository.insertToDo(
-                            toDo = it.copy(title = title, description = description)
+                    if (title.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "The title can't empty"
+                            )
                         )
+                        return@launch
                     }
+                    repository.insertToDo(
+                        toDo = ToDo(
+                            title = title,
+                            description = description,
+                            isDone = todo?.isDone ?: false,
+                            id = todo?.id
+                        )
+                    )
 
-                    sendUiEvent(UiEvent.PopBackStack)
-                }
+                sendUiEvent(UiEvent.PopBackStack)
             }
         }
     }
-    private fun sendUiEvent(event: UiEvent){
-        viewModelScope.launch {
-            _uiEvent.send(event)
-        }
-    }
+}
 
-    override fun onCleared() {
-       // Log.e(TAG, "onCleared: add", )
-        super.onCleared()
+private fun sendUiEvent(event: UiEvent) {
+    viewModelScope.launch {
+        _uiEvent.send(event)
     }
+}
+
+override fun onCleared() {
+    // Log.e(TAG, "onCleared: add", )
+    super.onCleared()
+}
 }
