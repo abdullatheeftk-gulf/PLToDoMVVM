@@ -28,8 +28,9 @@ fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {
-    val lazyColumnState = LazyListState()
-
+    val lazyColumnState= remember {
+        mutableStateOf(LazyListState())
+    }
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
 
@@ -40,6 +41,9 @@ fun ToDoListScreen(
     }
 
     LaunchedEffect(key1 = openDialog) {
+        /*toDoForDelete?.let {
+            lazyColumnState = LazyListState(it.id!!-25)
+        }*/
         viewModel.openFlag.value = openDialog
     }
     val allToDos by viewModel.allToDos.collectAsState()
@@ -98,7 +102,7 @@ fun ToDoListScreen(
             if (todos.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    state = lazyColumnState
+                    state = lazyColumnState.value
                 ) {
 
                     items(items = todos, key = {
