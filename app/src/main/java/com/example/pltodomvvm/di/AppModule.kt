@@ -5,6 +5,9 @@ import androidx.room.Room
 import com.example.pltodomvvm.data.ToDoDatabase
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.data.ToDoRepositoryImpl
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +29,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideToDoRepository(toDoDatabase: ToDoDatabase):ToDoRepository =
-        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao)
+    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth):ToDoRepository =
+        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth():FirebaseAuth = Firebase.auth
 
 }

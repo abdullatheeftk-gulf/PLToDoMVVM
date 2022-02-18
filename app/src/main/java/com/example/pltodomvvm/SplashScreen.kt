@@ -14,16 +14,23 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.pltodomvvm.util.Routes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(
-    navigate: ()->Unit
+    isAuthenticated:Boolean,
+    navigate: (route:String)->Unit
 ){
     LaunchedEffect(key1 = true ){
             delay(3000L)
-            navigate()
+            if (isAuthenticated){
+                navigate(Routes.TODO_LIST)
+            }else{
+                navigate(Routes.FIREBASE_LOGIN)
+            }
+
     }
 
     Scaffold(

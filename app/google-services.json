@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "163695802001",
+    "firebase_url": "https://mvvm-projects.firebaseio.com",
+    "project_id": "mvvm-projects",
+    "storage_bucket": "mvvm-projects.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163695802001:android:9cec6f5639c2062da83130",
+        "android_client_info": {
+          "package_name": "com.gulfappdeveloper.todo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "163695802001-bv5u98dp8vnl86i56er6ebbacd5m57d5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gulfappdeveloper.todo",
+            "certificate_hash": "b935f7fb93af15db1cff3ef712a438731f911439"
+          }
+        },
+        {
+          "client_id": "163695802001-bf2fsjq1gr7501mkh3mb89foeq50e4f1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrdldh1d2Ny1MaH1hOxmusQHpGDBKvjOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "163695802001-bf2fsjq1gr7501mkh3mb89foeq50e4f1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
