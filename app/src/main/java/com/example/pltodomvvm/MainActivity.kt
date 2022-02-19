@@ -30,6 +30,8 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var auth:FirebaseAuth
     private var isAuthenticated:Boolean = false
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(TAG, "onCreate: ")
@@ -48,7 +50,6 @@ class MainActivity : ComponentActivity() {
                     startDestination = Routes.SPLASH_SCREEN,
                 ) {
                     composable(route = Routes.SPLASH_SCREEN){
-
                         SplashScreen(isAuthenticated = isAuthenticated){
                             navController.navigate(it){
                                 popUpTo(Routes.SPLASH_SCREEN){

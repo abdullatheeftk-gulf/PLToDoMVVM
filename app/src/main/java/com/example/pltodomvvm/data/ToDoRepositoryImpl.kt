@@ -4,16 +4,19 @@ import android.util.Log
 import com.example.pltodomvvm.util.FirebaseAuthState
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 
 private const val TAG = "ToDoRepositoryImpl"
 
 class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+   // private val firebaseDb:FirebaseFirestore
 ) : ToDoRepository {
     override suspend fun insertToDo(toDo: ToDo) {
-        toDoDao.insertToDo(toDo = toDo)
+       toDoDao.insertToDo(toDo = toDo)
+
     }
 
     override suspend fun deleteToDo(toDo: ToDo) {

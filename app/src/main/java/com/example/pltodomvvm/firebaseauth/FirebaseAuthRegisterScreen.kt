@@ -3,10 +3,10 @@ package com.example.pltodomvvm.firebaseauth
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.util.UiEvent
@@ -14,9 +14,12 @@ import kotlinx.coroutines.flow.collect
 
 @Composable
 fun FirebaseAuthRegisterScreen(
-    onNavigate: (route:String)->Unit,
+    onNavigate: (route: String) -> Unit,
     viewModel: FirebaseAuthViewModel = hiltViewModel()
-){
+) {
+    var progressBarVisibility by remember {
+        mutableStateOf(0f)
+    }
     val scaffoldState = rememberScaffoldState()
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
@@ -27,8 +30,14 @@ fun FirebaseAuthRegisterScreen(
                         actionLabel = event.action
                     )
                 }
-                is UiEvent.Navigate->{
+                is UiEvent.Navigate -> {
                     onNavigate(event.route)
+                }
+                is UiEvent.ShowProgressBar -> {
+                    progressBarVisibility = 1f
+                }
+                is UiEvent.CloseProgressBar -> {
+                    progressBarVisibility = 0f
                 }
                 else -> Unit
             }
@@ -89,6 +98,10 @@ fun FirebaseAuthRegisterScreen(
                     viewModel.onEvent(FirebaseAuthToDoEvent.OnNavigateToLoginScreen)
                 },
                 text = "Already login?"
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            CircularProgressIndicator(
+                modifier = Modifier.alpha(progressBarVisibility)
             )
         }
     }

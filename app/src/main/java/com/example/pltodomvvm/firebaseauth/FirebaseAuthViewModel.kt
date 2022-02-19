@@ -19,10 +19,11 @@ import javax.annotation.meta.When
 import javax.inject.Inject
 
 private const val TAG = "FirebaseAuthViewModel"
+
 @HiltViewModel
 class FirebaseAuthViewModel @Inject constructor(
     private val repository: ToDoRepository
-):ViewModel() {
+) : ViewModel() {
 
     var email by mutableStateOf<String>("")
         private set
@@ -40,44 +41,58 @@ class FirebaseAuthViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
 
-    fun onEvent(firebaseAuthToDoEvent: FirebaseAuthToDoEvent){
-        when(firebaseAuthToDoEvent){
-            is FirebaseAuthToDoEvent.OnEmailTextChange->{
+    fun onEvent(firebaseAuthToDoEvent: FirebaseAuthToDoEvent) {
+        when (firebaseAuthToDoEvent) {
+            is FirebaseAuthToDoEvent.OnEmailTextChange -> {
                 email = firebaseAuthToDoEvent.email
             }
-            is FirebaseAuthToDoEvent.OnPasswordTextChange->{
+            is FirebaseAuthToDoEvent.OnPasswordTextChange -> {
                 password = firebaseAuthToDoEvent.password
             }
-            is FirebaseAuthToDoEvent.OnLoginButtonClicked->{
+            is FirebaseAuthToDoEvent.OnLoginButtonClicked -> {
                 viewModelScope.launch {
-                    if(email.isBlank()){
-                        sendUiEvent(UiEvent.ShowSnackBar(
-                            message = "email should be entered"
-                        ))
+                    if (email.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "email should be entered"
+                            )
+                        )
                         return@launch
                     }
-                    if(password.isBlank()){
-                    sendUiEvent(UiEvent.ShowSnackBar(
-                        message = "password should be entered"
-                    ))
-                    return@launch
-                }
+                    if (password.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "password should be entered"
+                            )
+                        )
+                        return@launch
+                    }
                     repository.signInWithEmailAndPassword(
                         email = email,
                         password = password
-                    ){authState: FirebaseAuthState ->
+                    ) { authState: FirebaseAuthState ->
                         when (authState) {
                             is FirebaseAuthState.OnAuthSuccess -> {
-                                Log.i(TAG, "sign in onAuthSuccess: ${authState.authResult.user?.email}")
+                                sendUiEvent(UiEvent.CloseProgressBar)
+
+                                Log.i(
+                                    TAG,
+                                    "sign in onAuthSuccess: ${authState.authResult.user?.email}"
+                                )
                                 sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST))
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
-                                Log.e(TAG, "sign in onAuthFailure: ", )
-                                sendUiEvent(UiEvent.ShowSnackBar(
-                                    message = "sign in There have some error when authenticating, Error code is ${authState.authException.message}"
-                                ))
+                                sendUiEvent(UiEvent.CloseProgressBar)
+                                Log.e(TAG, "sign in onAuthFailure: ")
+                                sendUiEvent(
+                                    UiEvent.ShowSnackBar(
+                                        message = "sign in There have some error when authenticating, Error code is ${authState.authException.message}"
+                                    )
+                                )
                             }
                             else -> {
+
+                                sendUiEvent(UiEvent.ShowProgressBar)
                                 Log.i(TAG, "sign in AuthState: Loading---")
                             }
                         }
@@ -85,49 +100,63 @@ class FirebaseAuthViewModel @Inject constructor(
 
                 }
             }
-            is FirebaseAuthToDoEvent.OnNavigateToRegisterScreen->{
+            is FirebaseAuthToDoEvent.OnNavigateToRegisterScreen -> {
                 sendUiEvent(UiEvent.Navigate(Routes.FIREBASE_REGISTER))
             }
-            is FirebaseAuthToDoEvent.OnConfirmPasswordChange->{
+            is FirebaseAuthToDoEvent.OnConfirmPasswordChange -> {
                 confirmPassword = firebaseAuthToDoEvent.confirmPassword
             }
 
-            is FirebaseAuthToDoEvent.OnRegisterButtonClicked->{
+            is FirebaseAuthToDoEvent.OnRegisterButtonClicked -> {
                 viewModelScope.launch {
-                    if(email.isBlank()){
-                        sendUiEvent(UiEvent.ShowSnackBar(
-                            message = "email should be entered"
-                        ))
+                    if (email.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "email should be entered"
+                            )
+                        )
                         return@launch
                     }
-                    if(password.isBlank()){
-                        sendUiEvent(UiEvent.ShowSnackBar(
-                            message = "password should be entered"
-                        ))
+                    if (password.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "password should be entered"
+                            )
+                        )
                         return@launch
                     }
-                    if (confirmPassword.isBlank()){
-                        sendUiEvent(UiEvent.ShowSnackBar(
-                            message = "confirm password should be entered"
-                        ))
+                    if (confirmPassword.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "confirm password should be entered"
+                            )
+                        )
                         return@launch
                     }
                     repository.createUserWithEmailAndPassword(
                         email = email,
                         password = password
-                    ){authState ->
+                    ) { authState ->
                         when (authState) {
                             is FirebaseAuthState.OnAuthSuccess -> {
-                                Log.i(TAG, "register onAuthSuccess: ${authState.authResult.user?.email}")
+                                sendUiEvent(UiEvent.CloseProgressBar)
+                                Log.i(
+                                    TAG,
+                                    "register onAuthSuccess: ${authState.authResult.user?.email}"
+                                )
                                 sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST))
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
-                                Log.e(TAG, "register onAuthFailure:${authState.authException} ", )
-                                sendUiEvent(UiEvent.ShowSnackBar(
-                                    message = "register There have some error when authenticating, Error code is ${authState.authException.message}"
-                                ))
+                                sendUiEvent(UiEvent.CloseProgressBar)
+                                Log.e(TAG, "register onAuthFailure:${authState.authException} ")
+                                sendUiEvent(
+                                    UiEvent.ShowSnackBar(
+                                        message = "register There have some error when authenticating, Error code is ${authState.authException.message}"
+                                    )
+                                )
                             }
                             else -> {
+                                sendUiEvent(UiEvent.ShowProgressBar)
                                 Log.i(TAG, "register AuthState: Loading---")
                             }
                         }
@@ -135,8 +164,8 @@ class FirebaseAuthViewModel @Inject constructor(
 
                 }
             }
-            is FirebaseAuthToDoEvent.OnNavigateToLoginScreen->{
-              sendUiEvent(UiEvent.Navigate(Routes.FIREBASE_LOGIN))
+            is FirebaseAuthToDoEvent.OnNavigateToLoginScreen -> {
+                sendUiEvent(UiEvent.Navigate(Routes.FIREBASE_LOGIN))
             }
         }
     }
