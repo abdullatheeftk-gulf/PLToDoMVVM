@@ -17,29 +17,31 @@ class ToDoRepositoryImpl(
     private val auth: FirebaseAuth,
     private val fdb:FirebaseFirestore
 ) : ToDoRepository {
-    override suspend fun insertToDo(toDo: ToDo,callBack:(fireStoreInsertState:FireStoreInsertState)->Unit) {
-        Log.i(TAG, "insertToDo: ${auth.currentUser?.email}")
+
+    override suspend fun insertToDo(toDo: ToDo,callBack:(itemId:Long)->Unit) {
+       val rowId = toDoDao.insertToDo(toDo = toDo)
+        callBack(rowId)
+    }
+
+    override suspend fun insertIntoFireStore(
+        toDo: ToDo,
+        callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
+    ) {
         auth.currentUser?.let {
-            insertToDoToRoom(toDo = toDo){
-                val data = toDo.copy(id=it.toInt())
-                fdb.collection("ToDo").document(it.toString())
-                    .set(data)
-                    .addOnSuccessListener {
-                        callBack(FireStoreInsertState.OnSuccess(true))
-                    }
-                    .addOnFailureListener {exception->
-                        callBack(FireStoreInsertState.OnFailure(exception = exception))
-                    }
-            }
+            callBack(FireStoreInsertState.OnProgress)
+            fdb.collection(it.email!!)
+                .document(toDo.id.toString())
+                .set(toDo)
+                .addOnSuccessListener {
+                    callBack(FireStoreInsertState.OnSuccess(true))
+                }
+                .addOnFailureListener {exception->
+                    callBack(FireStoreInsertState.OnFailure(exception = exception))
+                }
         }
-
     }
 
-   private suspend fun insertToDoToRoom(toDo: ToDo,callBack:(id:Long)->Unit){
-       val id =  toDoDao.insertToDo(toDo = toDo)
-       callBack(id)
 
-    }
     override suspend fun deleteToDo(toDo: ToDo) {
         deleteToDoFromRoom(toDo = toDo){
             Log.i(TAG, "deleteToDo: $it")

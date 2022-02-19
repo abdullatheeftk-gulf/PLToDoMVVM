@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.collect
 
 @Composable
 fun AddEditToDoScreen(
-    onPopStack: () -> Unit,
+    onNavigate: (route:String) -> Unit,
     viewModel: AddEditViewModel = hiltViewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
@@ -22,8 +22,8 @@ fun AddEditToDoScreen(
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { value: UiEvent ->
             when (value) {
-                is UiEvent.PopBackStack -> {
-                    onPopStack()
+                is UiEvent.Navigate -> {
+                    onNavigate(value.route)
                 }
                 is UiEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(

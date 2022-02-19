@@ -11,12 +11,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.FireStoreInsertState
+import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import javax.annotation.meta.When
 import javax.inject.Inject
 
 private const val TAG = "AddEditViewModel"
@@ -66,7 +67,7 @@ class AddEditViewModel @Inject constructor(
             }
 
             is AddEditToDoEvent.OnSaveToDoClick -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if (title.isBlank()) {
                         sendUiEvent(
                             UiEvent.ShowSnackBar(
@@ -83,22 +84,7 @@ class AddEditViewModel @Inject constructor(
                             id = todo?.id
                         )
                     ){
-                        when(it){
-                            is FireStoreInsertState.OnProgress->{
-                                Log.i(TAG, "progress: ___")
-                            }
-                            is FireStoreInsertState.OnSuccess->{
-                                Log.i(TAG, "onSuccess: ")
-                                sendUiEvent(UiEvent.PopBackStack)
-                            }
-                            is FireStoreInsertState.OnFailure->{
-                                Log.e(TAG, "onFailure: ---${it.exception}")
-                                sendUiEvent(UiEvent.ShowSnackBar(
-                                    message = "Firebase insertion failed"
-                                ))
-                            }
-                        }
-
+                        sendUiEvent(UiEvent.Navigate(route = Routes.TODO_LIST+"?syncToDoId=${it.toInt()}"))
                     }
 
 
@@ -114,6 +100,7 @@ private fun sendUiEvent(event: UiEvent) {
 }
 
 override fun onCleared() {
+    Log.i(TAG, "onCleared: viewModel")
     super.onCleared()
 }
 }

@@ -1,5 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -66,6 +68,8 @@ fun ToDoListScreen(
             }
         }
     }
+    
+
 
     ShowAlertDialog(
         title = "Do you want to delete ${toDoForDelete?.title}",

@@ -77,11 +77,18 @@ class MainActivity : ComponentActivity() {
                         })
                     }
 
-                    composable(route=Routes.TODO_LIST) {
+                    composable(
+                        route=Routes.TODO_LIST + "?syncToDoId={syncToDoId}",
+                        arguments = listOf(
+                            navArgument(name = "syncToDoId"){
+                                type = NavType.IntType
+                                defaultValue = -1
+                            }
+                        )
+                    ) {
                         ToDoListScreen(onNavigate = {
                             navController.navigate(it.route)
-                        }
-                        )
+                        })
                     }
                     composable(
                         route = Routes.ADD_EDIT_TODO+ "?todoId={todoId}",
@@ -93,8 +100,13 @@ class MainActivity : ComponentActivity() {
                         )
                     ) {
 
-                        AddEditToDoScreen(onPopStack = {
-                            navController.popBackStack()
+                        AddEditToDoScreen(onNavigate = {
+                            navController.navigate(route = it){
+                                popUpTo(Routes.ADD_EDIT_TODO + "?todoId={todoId}"){
+                                    inclusive = true
+                                }
+
+                            }
                         })
                     }
                 }
