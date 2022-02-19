@@ -79,7 +79,9 @@ class ToDoViewModel @Inject constructor(
                         toDoListEvent.toDo.copy(
                             isDone = toDoListEvent.isDone
                         )
-                    )
+                    ){
+
+                    }
                 }
             }
             is ToDoListEvent.OnToDoClick ->{
@@ -88,7 +90,9 @@ class ToDoViewModel @Inject constructor(
             is ToDoListEvent.OnUndoClick ->{
                 viewModelScope.launch {
                     deleteToDo?.let {
-                        repository.insertToDo(it)
+                        repository.insertToDo(it){
+
+                        }
                     }
 
                 }

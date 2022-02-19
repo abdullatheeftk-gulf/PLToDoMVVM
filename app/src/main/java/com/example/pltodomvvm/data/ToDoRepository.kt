@@ -1,11 +1,12 @@
 package com.example.pltodomvvm.data
 
 
+import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.FirebaseAuthState
 import kotlinx.coroutines.flow.Flow
 
 interface ToDoRepository {
-    suspend fun insertToDo(toDo: ToDo)
+    suspend fun insertToDo(toDo: ToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
     suspend fun deleteToDo(toDo: ToDo)
 

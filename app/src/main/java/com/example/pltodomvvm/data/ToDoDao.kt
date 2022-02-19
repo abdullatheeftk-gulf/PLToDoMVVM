@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ToDoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertToDo(toDo: ToDo)
+    suspend fun insertToDo(toDo: ToDo):Long
 
     @Delete
     suspend fun deleteToDo(toDo: ToDo)

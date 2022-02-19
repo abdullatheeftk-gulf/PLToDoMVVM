@@ -83,7 +83,7 @@ class FirebaseAuthViewModel @Inject constructor(
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
-                                Log.e(TAG, "sign in onAuthFailure: ")
+                                Log.e(TAG, "sign in onAuthFailure: ${authState.authException}")
                                 sendUiEvent(
                                     UiEvent.ShowSnackBar(
                                         message = "sign in There have some error when authenticating, Error code is ${authState.authException.message}"

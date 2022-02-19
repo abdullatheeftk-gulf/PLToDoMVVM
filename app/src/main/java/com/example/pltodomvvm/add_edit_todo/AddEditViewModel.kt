@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.add_edit_todo
 
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,14 +10,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
+import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import javax.annotation.meta.When
 import javax.inject.Inject
 
-
+private const val TAG = "AddEditViewModel"
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val repository: ToDoRepository,
@@ -79,9 +82,26 @@ class AddEditViewModel @Inject constructor(
                             isDone = todo?.isDone ?: false,
                             id = todo?.id
                         )
-                    )
+                    ){
+                        when(it){
+                            is FireStoreInsertState.OnProgress->{
+                                Log.i(TAG, "progress: ___")
+                            }
+                            is FireStoreInsertState.OnSuccess->{
+                                Log.i(TAG, "onSuccess: ")
+                                sendUiEvent(UiEvent.PopBackStack)
+                            }
+                            is FireStoreInsertState.OnFailure->{
+                                Log.e(TAG, "onFailure: ---${it.exception}")
+                                sendUiEvent(UiEvent.ShowSnackBar(
+                                    message = "Firebase insertion failed"
+                                ))
+                            }
+                        }
 
-                sendUiEvent(UiEvent.PopBackStack)
+                    }
+
+
             }
         }
     }

@@ -31,8 +31,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth):ToDoRepository =
-        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth)
+    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth,db:FirebaseFirestore):ToDoRepository =
+        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth, fdb = db)
 
     @Provides
     @Singleton
