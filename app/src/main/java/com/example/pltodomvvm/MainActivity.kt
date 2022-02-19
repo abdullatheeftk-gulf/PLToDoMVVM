@@ -30,19 +30,20 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var auth:FirebaseAuth
     private var isAuthenticated:Boolean = false
+    private var test:String = Routes.ADD_EDIT_TODO
 
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "onCreate: ")
+      //  Log.i(TAG, "onCreate: ")
     }
 
     override fun onStart() {
         super.onStart()
         val currentUser = auth.currentUser
         isAuthenticated = currentUser != null
-        Log.i(TAG, "onStart: $isAuthenticated")
+       // Log.i(TAG, "onStart: $isAuthenticated")
         setContent {
             PLToDoMVVMTheme {
                 val navController = rememberNavController()
@@ -88,8 +89,14 @@ class MainActivity : ComponentActivity() {
                         )
                     ) {
                         ToDoListScreen(onNavigate = {
+                            Log.i(TAG, "todolistscreen:${it.route} ")
+                           // test= it.route
                             navController.navigate(it.route)
-                        })
+                        },
+                            onBackStack = {
+
+                            }
+                        )
                     }
                     composable(
                         route = Routes.ADD_EDIT_TODO+ "?todoId={todoId}",
@@ -102,12 +109,20 @@ class MainActivity : ComponentActivity() {
                     ) {
 
                         AddEditToDoScreen(onNavigate = {
+                            test = it
+
+
                             navController.navigate(route = it){
-                                popUpTo(Routes.ADD_EDIT_TODO + "?todoId={todoId}"){
+                                popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
                                     inclusive = true
                                 }
 
                             }
+                            navController.backQueue.forEach {backStack->
+                              val t=  backStack.destination.route
+                                Log.i(TAG, "onStart: $t")
+                            }
+                            Log.e(TAG, "addEdit: $it", )
                         })
                     }
                 }
