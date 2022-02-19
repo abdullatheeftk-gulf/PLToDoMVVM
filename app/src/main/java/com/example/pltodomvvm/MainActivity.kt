@@ -27,6 +27,7 @@ private const val TAG = "MainActivity"
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+
     @Inject lateinit var auth:FirebaseAuth
     private var isAuthenticated:Boolean = false
 
