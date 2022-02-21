@@ -91,7 +91,12 @@ class MainActivity : ComponentActivity() {
                         ToDoListScreen(onNavigate = {
                             Log.i(TAG, "todolistscreen:${it.route} ")
                            // test= it.route
-                            navController.navigate(it.route)
+                            navController.navigate(it.route){
+                                popUpTo(Routes.TODO_LIST + "?syncToDoId={syncToDoId}"){
+
+                                }
+
+                            }
                         },
                             onBackStack = {
 
@@ -116,6 +121,7 @@ class MainActivity : ComponentActivity() {
                                 popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
                                     inclusive = true
                                 }
+                                launchSingleTop=true
 
                             }
                             navController.backQueue.forEach {backStack->
