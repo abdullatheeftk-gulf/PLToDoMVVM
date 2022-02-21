@@ -12,6 +12,7 @@ import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.RequestState
 import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -43,11 +44,25 @@ class ToDoViewModel @Inject constructor(
     init {
         getAllToDos()
         val toDoInJson = savedStateHandle.get<String>("syncToDo")
-        Log.d("TAG", ": $toDoInJson")
-        if (toDoInJson?.isEmpty()!!){
-            Log.i("TAG", "if: empty")
-        }else{
-            Log.d("TAG", "if: not empty")
+        if (!toDoInJson?.isEmpty()!!) {
+            val mToDo = Gson().fromJson(toDoInJson,ToDo::class.java)
+            viewModelScope.launch { 
+                repository.insertToDo(toDo = mToDo){id->
+                    repository.insertIntoFireStore(toDo = mToDo.copy(id = id.toInt())){fireStoreState->
+                        when(fireStoreState){
+                            is FireStoreInsertState.OnSuccess->{
+                                Log.d(TAG, "success: ${fireStoreState.isSuccess}")
+                            }
+                            is FireStoreInsertState.OnFailure->{
+                                Log.e(TAG, "failure: ${fireStoreState.exception} ", )
+                            }
+                            is FireStoreInsertState.OnProgress->{
+                                Log.d(TAG, "onProgress:onProgress ")
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -59,7 +74,6 @@ class ToDoViewModel @Inject constructor(
                 repository.getTodos().collect {
                     _allToDos.value = RequestState.Success(it)
                 }
-
             }
         } catch (e: Exception) {
             _allToDos.value = RequestState.Error<java.lang.Exception>(e)
@@ -107,6 +121,12 @@ class ToDoViewModel @Inject constructor(
             }
             is ToDoListEvent.OnAddToDoClick -> {
                 sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoId=-1"))
+            }
+            is ToDoListEvent.SyncInProgress->{
+
+            }
+            is ToDoListEvent.StopProgress->{
+
             }
         }
     }

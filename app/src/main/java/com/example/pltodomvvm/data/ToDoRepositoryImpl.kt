@@ -18,7 +18,7 @@ class ToDoRepositoryImpl(
     private val fdb:FirebaseFirestore
 ) : ToDoRepository {
 
-    override suspend fun insertToDo(toDo: ToDo,callBack:(itemId:Long)->Unit) {
+    override suspend fun insertToDo(toDo: ToDo,callBack:suspend (itemId:Long)->Unit) {
        val rowId = toDoDao.insertToDo(toDo = toDo)
         callBack(rowId)
     }

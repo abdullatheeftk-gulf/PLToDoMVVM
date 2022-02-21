@@ -86,6 +86,7 @@ class AddEditViewModel @Inject constructor(
                         isDone = todo?.isDone ?: false,
                         id = todo?.id
                     )
+                    Log.i(TAG, "onEvent: $toDoToSend")
                     val gson = Gson()
                     val jsonToDo = gson.toJson(toDoToSend)
 

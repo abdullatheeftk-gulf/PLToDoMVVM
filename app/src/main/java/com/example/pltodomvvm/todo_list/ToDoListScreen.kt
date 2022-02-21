@@ -27,7 +27,6 @@ private const val TAG = "ToDoListScreen"
 @ExperimentalFoundationApi
 @Composable
 fun ToDoListScreen(
-    onBackStack:()->Unit,
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
     viewModel: ToDoViewModel = hiltViewModel()
 ) {

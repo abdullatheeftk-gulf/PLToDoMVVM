@@ -29,19 +29,15 @@ private const val TAG = "MainActivity"
 class MainActivity : ComponentActivity() {
 
 
-    @Inject lateinit var auth:FirebaseAuth
-    private var isAuthenticated:Boolean = false
-    private var test:String = Routes.ADD_EDIT_TODO
-
-
-
+    @Inject
+    lateinit var auth: FirebaseAuth
+    private var isAuthenticated: Boolean = false
 
 
     override fun onStart() {
         super.onStart()
         val currentUser = auth.currentUser
         isAuthenticated = currentUser != null
-       // Log.i(TAG, "onStart: $isAuthenticated")
         setContent {
             PLToDoMVVMTheme {
                 val navController = rememberNavController()
@@ -49,91 +45,65 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = Routes.SPLASH_SCREEN,
                 ) {
-                    composable(route = Routes.SPLASH_SCREEN){
-                        SplashScreen(isAuthenticated = isAuthenticated){
-                            navController.navigate(it){
-                                popUpTo(Routes.SPLASH_SCREEN){
+                    composable(route = Routes.SPLASH_SCREEN) {
+                        SplashScreen(isAuthenticated = isAuthenticated) {
+                            navController.navigate(it) {
+                                popUpTo(Routes.SPLASH_SCREEN) {
                                     inclusive = true
                                 }
                             }
                         }
                     }
-                    composable(route = Routes.FIREBASE_LOGIN){
-                        FireBaseAuthLoginScreen{
-                            navController.navigate(route = it){
-                                popUpTo(Routes.FIREBASE_LOGIN){
+                    composable(route = Routes.FIREBASE_LOGIN) {
+                        FireBaseAuthLoginScreen {
+                            navController.navigate(route = it) {
+                                popUpTo(Routes.FIREBASE_LOGIN) {
                                     inclusive = true
                                 }
                             }
                         }
                     }
-                    composable(route = Routes.FIREBASE_REGISTER){
+                    composable(route = Routes.FIREBASE_REGISTER) {
                         FirebaseAuthRegisterScreen(onNavigate = {
-                            navController.navigate(route = it){
-                                popUpTo(Routes.FIREBASE_REGISTER){
-                                    inclusive=true
+                            navController.navigate(route = it) {
+                                popUpTo(Routes.FIREBASE_REGISTER) {
+                                    inclusive = true
                                 }
                             }
                         })
                     }
 
                     composable(
-                        route=Routes.TODO_LIST + "?syncToDo={syncToDo}",
+                        route = Routes.TODO_LIST + "?syncToDo={syncToDo}",
                         arguments = listOf(
-                            navArgument(name = "syncToDo"){
+                            navArgument(name = "syncToDo") {
                                 type = NavType.StringType
                                 defaultValue = ""
                             }
                         )
                     ) {
                         ToDoListScreen(onNavigate = {
-                            Log.i(TAG, "todolistscreen:${it.route} ")
-
-                            navController.navigate(it.route){
-                                popUpTo(route =Routes.TODO_LIST + "?syncToDo={syncToDo}" ){
-                                    //inclusive = true
-
-                                }
-                            }
-                        },
-                            onBackStack = {
-
-                            }
+                            navController.navigate(it.route)
+                        }
                         )
                     }
                     composable(
-                        route = Routes.ADD_EDIT_TODO+ "?todoId={todoId}",
+                        route = Routes.ADD_EDIT_TODO + "?todoId={todoId}",
                         arguments = listOf(
-                            navArgument(name = "todoId"){
+                            navArgument(name = "todoId") {
                                 type = NavType.IntType
                                 defaultValue = -1
                             }
                         )
                     ) {
-
                         AddEditToDoScreen(onNavigate = {
-                            Log.i(TAG, "addEditToDoScreen: $it")
-                            navController.navigate(it){
-                                popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
-                                    inclusive =true
-                                }
-                                launchSingleTop=true
-                            }
-                           /* test = it
-
-
-                            navController.navigate(route = it){
-                                popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
+                            navController.navigate(it) {
+                                popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
                                     inclusive = true
                                 }
 
                             }
 
-                            navController.backQueue.forEach {backStack->
-                              val t=  backStack.destination.route
-                                Log.i(TAG, "onStart: $t")
-                            }
-                            Log.e(TAG, "addEdit: $it", )*/
                         })
                     }
                 }

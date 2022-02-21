@@ -12,22 +12,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 import com.example.pltodomvvm.data.ToDo
 
 
-
+private const val TAG = "ToDoItem"
 
 @Composable
 fun ToDoItem(
+    modifier: Modifier = Modifier,
+    viewModel: ToDoViewModel= hiltViewModel(),
     toDo: ToDo,
     onEvent: (event: ToDoListEvent) -> Unit,
-    modifier: Modifier = Modifier,
-    onDeleteIconClicked:(toDo:ToDo)->Unit
+    onDeleteIconClicked:(toDo:ToDo)->Unit,
 ) {
+
+    LaunchedEffect(key1 = true){
+        Log.i(TAG, "ToDoItem: $toDo ")
+
+    }
 
 
 
@@ -74,14 +82,18 @@ fun ToDoItem(
 
 }
 
-/*
-@Preview
+/*@Preview
 @Composable
 private fun ToDoItemPreview() {
     ToDoItem(
         toDo = ToDo(title = "Go to school", description = "Today", isDone = true, id = 1),
         onEvent = {
 
-        }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        onDeleteIconClicked = {}
+
     )
 }*/
