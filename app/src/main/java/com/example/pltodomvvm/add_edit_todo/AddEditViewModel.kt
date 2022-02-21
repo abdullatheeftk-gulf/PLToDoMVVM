@@ -13,6 +13,7 @@ import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "AddEditViewModel"
+
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val repository: ToDoRepository,
@@ -76,31 +78,34 @@ class AddEditViewModel @Inject constructor(
                         )
                         return@launch
                     }
-                    repository.insertToDo(
-                        toDo = ToDo(
-                            title = title,
-                            description = description,
-                            isDone = todo?.isDone ?: false,
-                            id = todo?.id
-                        )
-                    ){
-                        sendUiEvent(UiEvent.Navigate(route = Routes.TODO_LIST+"?syncToDoId=${it.toInt()}"))
-                    }
 
 
+                    val toDoToSend = ToDo(
+                        title = title,
+                        description = description,
+                        isDone = todo?.isDone ?: false,
+                        id = todo?.id
+                    )
+                    val gson = Gson()
+                    val jsonToDo = gson.toJson(toDoToSend)
+
+                    Log.i("TAG", "AddToDoViewModel: $jsonToDo")
+                    sendUiEvent(UiEvent.Navigate(route = Routes.TODO_LIST + "?syncToDo=${jsonToDo}"))
+
+
+                }
             }
         }
     }
-}
 
-private fun sendUiEvent(event: UiEvent) {
-    viewModelScope.launch {
-        _uiEvent.send(event)
+    private fun sendUiEvent(event: UiEvent) {
+        viewModelScope.launch {
+            _uiEvent.send(event)
+        }
     }
-}
 
-override fun onCleared() {
-    Log.i(TAG, "onCleared: viewModel")
-    super.onCleared()
-}
+    override fun onCleared() {
+        Log.i(TAG, "onCleared: viewModel")
+        super.onCleared()
+    }
 }

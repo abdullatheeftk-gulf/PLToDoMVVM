@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.findNavController
 import androidx.navigation.navArgument
 import com.example.pltodomvvm.add_edit_todo.AddEditToDoScreen
 import com.example.pltodomvvm.firebaseauth.FireBaseAuthLoginScreen
@@ -34,10 +35,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-      //  Log.i(TAG, "onCreate: ")
-    }
+
 
     override fun onStart() {
         super.onStart()
@@ -73,25 +71,30 @@ class MainActivity : ComponentActivity() {
                         FirebaseAuthRegisterScreen(onNavigate = {
                             navController.navigate(route = it){
                                 popUpTo(Routes.FIREBASE_REGISTER){
-                                    inclusive = true
+                                    inclusive=true
                                 }
                             }
                         })
                     }
 
                     composable(
-                        route=Routes.TODO_LIST + "?syncToDoId={syncToDoId}",
+                        route=Routes.TODO_LIST + "?syncToDo={syncToDo}",
                         arguments = listOf(
-                            navArgument(name = "syncToDoId"){
-                                type = NavType.IntType
-                                defaultValue = -1
+                            navArgument(name = "syncToDo"){
+                                type = NavType.StringType
+                                defaultValue = ""
                             }
                         )
                     ) {
                         ToDoListScreen(onNavigate = {
                             Log.i(TAG, "todolistscreen:${it.route} ")
-                           // test= it.route
-                            navController.navigate(it.route)
+
+                            navController.navigate(it.route){
+                                popUpTo(route =Routes.TODO_LIST + "?syncToDo={syncToDo}" ){
+                                    //inclusive = true
+
+                                }
+                            }
                         },
                             onBackStack = {
 
@@ -109,7 +112,13 @@ class MainActivity : ComponentActivity() {
                     ) {
 
                         AddEditToDoScreen(onNavigate = {
-                            test = it
+                            Log.i(TAG, "addEditToDoScreen: $it")
+                            navController.navigate(it){
+                                popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
+                                    inclusive =true
+                                }
+                            }
+                           /* test = it
 
 
                             navController.navigate(route = it){
@@ -118,11 +127,12 @@ class MainActivity : ComponentActivity() {
                                 }
 
                             }
+
                             navController.backQueue.forEach {backStack->
                               val t=  backStack.destination.route
                                 Log.i(TAG, "onStart: $t")
                             }
-                            Log.e(TAG, "addEdit: $it", )
+                            Log.e(TAG, "addEdit: $it", )*/
                         })
                     }
                 }
@@ -130,6 +140,12 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+        Log.i(TAG, "onBackPressed: ")
     }
 
 

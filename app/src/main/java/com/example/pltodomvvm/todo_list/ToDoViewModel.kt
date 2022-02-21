@@ -42,31 +42,13 @@ class ToDoViewModel @Inject constructor(
 
     init {
         getAllToDos()
-        val toSyncToDoId = savedStateHandle.get<Int>("syncToDoId")!!
-        Log.i(TAG, ": $toSyncToDoId")
-        if (toSyncToDoId != -1) {
-            viewModelScope.launch {
-                val toDoSync = repository.getToDoById(id = toSyncToDoId)!!
-                repository.insertIntoFireStore(toDo = toDoSync){state->
-                    when(state){
-                        is FireStoreInsertState.OnProgress->{
-                            Log.i(TAG, "fireStore: progress $toDoSync")
-                        }
-                        is FireStoreInsertState.OnSuccess->{
-                            sendUiEvent(UiEvent.ShowSnackBar(
-                                message = "${toDoSync.title} is inserted to FireStore"
-                            ))
-                        }
-                        is FireStoreInsertState.OnFailure->{
-                            sendUiEvent(UiEvent.ShowSnackBar(
-                                message = "An error ${state.exception} "
-                            ))
-                        }
-                    }
-                }
-            }
+        val toDoInJson = savedStateHandle.get<String>("syncToDo")
+        Log.d("TAG", ": $toDoInJson")
+        if (toDoInJson?.isEmpty()!!){
+            Log.i("TAG", "if: empty")
+        }else{
+            Log.d("TAG", "if: not empty")
         }
-
     }
 
 
@@ -124,7 +106,7 @@ class ToDoViewModel @Inject constructor(
                 }
             }
             is ToDoListEvent.OnAddToDoClick -> {
-                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO))
+                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoId=-1"))
             }
         }
     }
