@@ -117,6 +117,7 @@ class MainActivity : ComponentActivity() {
                                 popUpTo(Routes.ADD_EDIT_TODO+"?todoId={todoId}"){
                                     inclusive =true
                                 }
+                                launchSingleTop=true
                             }
                            /* test = it
 
