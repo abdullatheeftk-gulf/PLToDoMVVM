@@ -8,10 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
-import com.example.pltodomvvm.util.FireStoreInsertState
-import com.example.pltodomvvm.util.RequestState
-import com.example.pltodomvvm.util.Routes
-import com.example.pltodomvvm.util.UiEvent
+import com.example.pltodomvvm.util.*
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -36,6 +33,9 @@ class ToDoViewModel @Inject constructor(
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
+    private val _toDoSyncStatus = Channel<ToDoSyncStatus>()
+    val toDoSyncStatus = _toDoSyncStatus.receiveAsFlow()
+
     private var deleteToDo: ToDo? = null
 
     private var _allToDos = MutableStateFlow<RequestState<List<ToDo>>>(RequestState.Idle)
@@ -51,12 +51,15 @@ class ToDoViewModel @Inject constructor(
                     repository.insertIntoFireStore(toDo = mToDo.copy(id = id.toInt())){fireStoreState->
                         when(fireStoreState){
                             is FireStoreInsertState.OnSuccess->{
+                                onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
                                 Log.d(TAG, "success: ${fireStoreState.isSuccess}")
                             }
                             is FireStoreInsertState.OnFailure->{
+                                onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
                                 Log.e(TAG, "failure: ${fireStoreState.exception} ", )
                             }
                             is FireStoreInsertState.OnProgress->{
+                                onEvent(ToDoListEvent.SyncInProgress(id.toInt()))
                                 Log.d(TAG, "onProgress:onProgress ")
                             }
                         }
@@ -123,9 +126,10 @@ class ToDoViewModel @Inject constructor(
                 sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoId=-1"))
             }
             is ToDoListEvent.SyncInProgress->{
-
+                sendToDoSyncStatus(ToDoSyncStatus.SyncStarted(toDoListEvent.id))
             }
-            is ToDoListEvent.StopProgress->{
+            is ToDoListEvent.SyncInStopped->{
+                sendToDoSyncStatus(ToDoSyncStatus.SyncStopped(toDoListEvent.id))
 
             }
         }
@@ -135,6 +139,12 @@ class ToDoViewModel @Inject constructor(
     private fun sendUiEvent(event: UiEvent) {
         viewModelScope.launch {
             _uiEvent.send(event)
+        }
+    }
+
+    private fun sendToDoSyncStatus(toDoSyncStatus: ToDoSyncStatus) {
+        viewModelScope.launch {
+            _toDoSyncStatus.send(toDoSyncStatus)
         }
     }
 
