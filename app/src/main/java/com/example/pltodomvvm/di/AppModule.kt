@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.di
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import com.example.pltodomvvm.data.ToDoDatabase
 import com.example.pltodomvvm.data.ToDoRepository
@@ -31,8 +32,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth,db:FirebaseFirestore):ToDoRepository =
-        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth, fdb = db)
+    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth,db:FirebaseFirestore,context: Context):ToDoRepository =
+        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth, fdb = db, context =context )
 
     @Provides
     @Singleton
@@ -42,4 +43,10 @@ object AppModule {
     @Singleton
     fun provideFirebaseFireStore():FirebaseFirestore = Firebase.firestore
 
+
+    @Provides
+    @Singleton
+    fun provideContext(app:Application):Context{
+        return app.applicationContext
+    }
 }

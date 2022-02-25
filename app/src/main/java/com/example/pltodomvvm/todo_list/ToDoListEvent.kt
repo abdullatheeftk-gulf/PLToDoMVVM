@@ -8,6 +8,7 @@ sealed class ToDoListEvent{
     data class OnToDoClick(val toDo: ToDo):ToDoListEvent()
     data class SyncInProgress(val id:Int):ToDoListEvent()
     data class SyncInStopped(val id:Int):ToDoListEvent()
+    data class SyncFailed(val id:Int,val exception: Exception):ToDoListEvent()
     object OnUndoClick:ToDoListEvent()
     object OnAddToDoClick:ToDoListEvent()
 }

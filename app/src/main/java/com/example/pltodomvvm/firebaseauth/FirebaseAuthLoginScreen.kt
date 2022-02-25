@@ -27,7 +27,7 @@ fun FireBaseAuthLoginScreen(
             when (event) {
                 is UiEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(
-                        message = event.message,
+                        message = event.message!!,
                         actionLabel = event.action
                     )
                 }

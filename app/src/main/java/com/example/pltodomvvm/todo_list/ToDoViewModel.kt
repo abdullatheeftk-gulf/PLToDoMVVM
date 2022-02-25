@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -11,6 +12,7 @@ import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.*
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -45,20 +47,39 @@ class ToDoViewModel @Inject constructor(
         getAllToDos()
         val toDoInJson = savedStateHandle.get<String>("syncToDo")
         if (!toDoInJson?.isEmpty()!!) {
-            val mToDo = Gson().fromJson(toDoInJson,ToDo::class.java)
-            viewModelScope.launch { 
-                repository.insertToDo(toDo = mToDo){id->
-                    repository.insertIntoFireStore(toDo = mToDo.copy(id = id.toInt())){fireStoreState->
-                        when(fireStoreState){
-                            is FireStoreInsertState.OnSuccess->{
+            val mToDo = Gson().fromJson(toDoInJson, ToDo::class.java)
+            viewModelScope.launch {
+                repository.insertToDo(toDo = mToDo) { id ->
+                    repository.insertIntoFireStore(toDo = mToDo.copy(id = id.toInt())) { fireStoreState ->
+                        when (fireStoreState) {
+                            is FireStoreInsertState.OnSuccess -> {
                                 onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
-                                Log.d(TAG, "success: ${fireStoreState.isSuccess}")
+                                Log.w(
+                                    TAG,
+                                    "success: ${fireStoreState.inToDo}  ${Thread.currentThread().name}"
+                                )
+                                viewModelScope.launch(Dispatchers.IO) {
+                                    Log.i(TAG, "scope: ")
+                                   val job = launch(Dispatchers.IO) {
+                                        repository.insertToDo(toDo =mToDo.copy(isSyncFinished = true, id = fireStoreState.inToDo.id) ){
+                                            Log.i(TAG, "inserted with id: $it ")
+                                        }
+                                    }
+                                    job.join()
+
+                                }
+                                Log.d(TAG, "later launch: ")
                             }
-                            is FireStoreInsertState.OnFailure->{
-                                onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
-                                Log.e(TAG, "failure: ${fireStoreState.exception} ", )
+                            is FireStoreInsertState.OnFailure -> {
+                                onEvent(
+                                    ToDoListEvent.SyncFailed(
+                                        id = id.toInt(),
+                                        fireStoreState.exception
+                                    )
+                                )
+                                Log.e(TAG, "failure: ${fireStoreState.exception} ")
                             }
-                            is FireStoreInsertState.OnProgress->{
+                            is FireStoreInsertState.OnProgress -> {
                                 onEvent(ToDoListEvent.SyncInProgress(id.toInt()))
                                 Log.d(TAG, "onProgress:onProgress ")
                             }
@@ -105,7 +126,7 @@ class ToDoViewModel @Inject constructor(
                         toDoListEvent.toDo.copy(
                             isDone = toDoListEvent.isDone
                         )
-                    ){
+                    ) {
 
                     }
                 }
@@ -116,21 +137,25 @@ class ToDoViewModel @Inject constructor(
             is ToDoListEvent.OnUndoClick -> {
                 viewModelScope.launch {
                     deleteToDo?.let {
-                        repository.insertToDo(it){
+                        repository.insertToDo(it) {
 
                         }
                     }
                 }
             }
             is ToDoListEvent.OnAddToDoClick -> {
-                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO+"?todoId=-1"))
+                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=-1"))
             }
-            is ToDoListEvent.SyncInProgress->{
+            is ToDoListEvent.SyncInProgress -> {
                 sendToDoSyncStatus(ToDoSyncStatus.SyncStarted(toDoListEvent.id))
             }
-            is ToDoListEvent.SyncInStopped->{
+            is ToDoListEvent.SyncInStopped -> {
                 sendToDoSyncStatus(ToDoSyncStatus.SyncStopped(toDoListEvent.id))
 
+            }
+            is ToDoListEvent.SyncFailed -> {
+                sendToDoSyncStatus(ToDoSyncStatus.SyncError(id = toDoListEvent.id))
+                sendUiEvent(UiEvent.ShowSnackBar(message = toDoListEvent.exception.message))
             }
         }
     }

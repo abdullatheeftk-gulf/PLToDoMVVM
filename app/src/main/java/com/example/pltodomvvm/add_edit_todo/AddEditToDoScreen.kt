@@ -27,7 +27,7 @@ fun AddEditToDoScreen(
                 }
                 is UiEvent.ShowSnackBar -> {
                     scaffoldState.snackbarHostState.showSnackbar(
-                        message = value.message,
+                        message = value.message!!,
                         actionLabel = value.action
                     )
                 }

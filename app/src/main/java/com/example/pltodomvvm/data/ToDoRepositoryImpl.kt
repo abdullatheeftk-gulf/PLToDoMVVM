@@ -1,21 +1,29 @@
 package com.example.pltodomvvm.data
 
+import android.content.Context
 import android.util.Log
+import androidx.work.*
 import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.FirebaseAuthState
+import com.example.pltodomvvm.workmanager.MyWork
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "ToDoRepositoryImpl"
 
 class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
     private val auth: FirebaseAuth,
-    private val fdb:FirebaseFirestore
+    private val fdb:FirebaseFirestore,
+    private val context:Context
 ) : ToDoRepository {
 
     override suspend fun insertToDo(toDo: ToDo,callBack:suspend (itemId:Long)->Unit) {
@@ -27,13 +35,33 @@ class ToDoRepositoryImpl(
         toDo: ToDo,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
+        /*val addData = Data.Builder()
+            .putString("syncToDo",Gson().toJson(toDo))
+            .build()
+        val workManager = WorkManager.getInstance(context)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val addRequest = OneTimeWorkRequest.Builder(MyWork::class.java)
+            .setConstraints(constraints)
+            .setInputData(addData)
+            .build()
+        workManager.enqueue(addRequest)*/
+
+
+
+
+
+
+      //  Log.i(TAG, "insertIntoFireStore: $context")
         auth.currentUser?.let {
+            val syncToDo = toDo.copy(isSyncFinished = true)
             callBack(FireStoreInsertState.OnProgress)
             fdb.collection(it.email!!)
                 .document(toDo.id.toString())
-                .set(toDo)
+                .set(syncToDo)
                 .addOnSuccessListener {
-                    callBack(FireStoreInsertState.OnSuccess(true))
+                    callBack(FireStoreInsertState.OnSuccess(inToDo = syncToDo))
                 }
                 .addOnFailureListener {exception->
                     callBack(FireStoreInsertState.OnFailure(exception = exception))

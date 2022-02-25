@@ -90,4 +90,10 @@ dependencies {
 
     //gson library
     implementation 'com.google.code.gson:gson:2.9.0'
+
+    def work_version = "2.7.1"
+    implementation("androidx.work:work-runtime-ktx:$work_version")
+
+    implementation("androidx.hilt:hilt-work:1.0.0")
+    kapt("androidx.hilt:hilt-compiler:1.0.0")
 }
