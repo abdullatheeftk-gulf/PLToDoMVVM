@@ -49,7 +49,22 @@ class ToDoViewModel @Inject constructor(
         if (!toDoInJson?.isEmpty()!!) {
             val mToDo = Gson().fromJson(toDoInJson, ToDo::class.java)
             viewModelScope.launch {
-                repository.insertToDo(toDo = mToDo) { id ->
+                repository.insertToDo(mToDo){fireStoreInsertState ->
+                   when(fireStoreInsertState){
+                       is FireStoreInsertState.OnProgress->{
+
+                       }
+                       is FireStoreInsertState.OnSuccess->{
+                           viewModelScope.launch {
+                               repository.addToDo(fireStoreInsertState.inToDo)
+                           }
+                       }
+                       is FireStoreInsertState.OnFailure->{
+
+                       }
+                   }
+                }
+                /*repository.insertToDo(toDo = mToDo) { id ->
                     repository.insertIntoFireStore(toDo = mToDo.copy(id = id.toInt())) { fireStoreState ->
                         when (fireStoreState) {
                             is FireStoreInsertState.OnSuccess -> {
@@ -85,7 +100,7 @@ class ToDoViewModel @Inject constructor(
                             }
                         }
                     }
-                }
+                }*/
             }
         }
     }

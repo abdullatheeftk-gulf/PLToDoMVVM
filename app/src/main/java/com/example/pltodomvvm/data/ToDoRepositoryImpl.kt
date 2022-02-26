@@ -11,11 +11,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val TAG = "ToDoRepositoryImpl"
 
@@ -26,7 +23,37 @@ class ToDoRepositoryImpl(
     private val context:Context
 ) : ToDoRepository {
 
-    override suspend fun insertToDo(toDo: ToDo,callBack:suspend (itemId:Long)->Unit) {
+    override suspend fun insertToDo(
+        toDo: ToDo,
+        callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
+    ) {
+       val id =  toDoDao.insertToDo(toDo = toDo)
+        auth.currentUser?.let {
+            callBack(FireStoreInsertState.OnProgress)
+            fdb.collection(it.email!!).document(id.toString())
+                .set(toDo.copy(isSyncFinished = true,id=id.toInt()))
+                .addOnSuccessListener {
+
+                }
+                .addOnFailureListener {e->
+                    callBack(FireStoreInsertState.OnFailure(e))
+                }
+                .addOnCompleteListener { task->
+                   if (task.isComplete && task.isSuccessful){
+                       callBack(FireStoreInsertState.OnSuccess(toDo.copy(isSyncFinished = true,id=id.toInt())))
+                   }
+
+                }
+        }
+    }
+
+    override suspend fun addToDo(toDo: ToDo) {
+        toDoDao.insertToDo(toDo)
+    }
+
+
+
+    /*override suspend fun insertToDo(toDo: ToDo,callBack:suspend (itemId:Long)->Unit) {
        val rowId = toDoDao.insertToDo(toDo = toDo)
         callBack(rowId)
     }
@@ -35,7 +62,7 @@ class ToDoRepositoryImpl(
         toDo: ToDo,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
-        /*val addData = Data.Builder()
+        *//*val addData = Data.Builder()
             .putString("syncToDo",Gson().toJson(toDo))
             .build()
         val workManager = WorkManager.getInstance(context)
@@ -46,7 +73,7 @@ class ToDoRepositoryImpl(
             .setConstraints(constraints)
             .setInputData(addData)
             .build()
-        workManager.enqueue(addRequest)*/
+        workManager.enqueue(addRequest)*//*
 
 
 
@@ -67,7 +94,7 @@ class ToDoRepositoryImpl(
                     callBack(FireStoreInsertState.OnFailure(exception = exception))
                 }
         }
-    }
+    }*/
 
 
     override suspend fun deleteToDo(toDo: ToDo) {
