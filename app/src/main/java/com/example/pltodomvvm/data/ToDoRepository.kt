@@ -18,6 +18,14 @@ interface ToDoRepository {
 
     suspend fun getToDoById(id:Int):ToDo?
 
+
+
+    suspend fun incrementCounter()
+
+    fun getOperationCounterFlow():Flow<Int>
+
+
+
     fun getTodos(): Flow<List<ToDo>>
 
 

@@ -2,6 +2,7 @@ package com.example.pltodomvvm.todo_list
 
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -18,7 +19,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-//private const val TAG = "ToDoViewModel"
+private const val TAG = "ToDoViewModel"
 
 @HiltViewModel
 class ToDoViewModel @Inject constructor(
@@ -42,8 +43,10 @@ class ToDoViewModel @Inject constructor(
 
     private var _allToDos = MutableStateFlow<RequestState<List<ToDo>>>(RequestState.Idle)
     val allToDos: StateFlow<RequestState<List<ToDo>>> = _allToDos
+    
 
     init {
+        setOperationCounter()
         getAllToDos()
         val toDoInJson = savedStateHandle.get<String>("syncToDo")
         if (toDoInJson != null) {
@@ -98,17 +101,30 @@ class ToDoViewModel @Inject constructor(
 
     }
 
+    private fun setOperationCounter(){
+        viewModelScope.launch {
+            repository.incrementCounter()
+        }
+    }
+
+
+
 
     private fun getAllToDos() {
-
         _allToDos.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 repository.getTodos().collect {listOfToDo->
                     _allToDos.value = RequestState.Success(listOfToDo)
-                    repository.getAllToDoesFromFireStore {fireToDoList->
-                        _allToDos.value = RequestState.Success(fireToDoList)
+                    repository.getOperationCounterFlow().collect {
+                        Log.i(TAG, "operation Counter: $it ")
+                        if (it<=1) {
+                            repository.getAllToDoesFromFireStore { fireToDoList ->
+                                _allToDos.value = RequestState.Success(fireToDoList)
+                            }
+                        }
                     }
+
                 }
             }
         } catch (e: Exception) {

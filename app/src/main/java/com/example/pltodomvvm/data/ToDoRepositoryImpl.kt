@@ -1,12 +1,20 @@
 package com.example.pltodomvvm.data
 
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import com.example.pltodomvvm.util.Constants.OPERATION_COUNTER
 import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.FirebaseAuthState
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import java.io.IOException
 import java.util.*
 
 //private const val TAG = "ToDoRepositoryImpl"
@@ -15,7 +23,13 @@ class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
     private val auth: FirebaseAuth,
     private val fdb: FirebaseFirestore,
+    private val dataStore: DataStore<Preferences>,
 ) : ToDoRepository {
+
+
+
+
+
 
 
     override suspend fun insertToDo(
@@ -86,6 +100,21 @@ class ToDoRepositoryImpl(
         return toDoDao.getToDoById(id = id)
     }
 
+    override suspend fun incrementCounter() {
+        dataStore.edit {settings->
+            val currentCounterValue = settings[OPERATION_COUNTER] ?: 0
+            settings[OPERATION_COUNTER] = currentCounterValue+1
+        }
+    }
+
+    override fun getOperationCounterFlow(): Flow<Int> {
+        val operationCounterFlow:Flow<Int> = dataStore.data
+            .map { preferences->
+                preferences[OPERATION_COUNTER] ?: 0
+            }
+        return operationCounterFlow
+    }
+
     override fun getTodos(): Flow<List<ToDo>> {
         return toDoDao.getTodos()
     }
@@ -129,8 +158,8 @@ class ToDoRepositoryImpl(
                     }
                     callBack(reOrderToDoList(toDos.asReversed()))
                 }
-                .addOnFailureListener {e->
-                    Log.e("TAG", "getAllToDoesFromFireStore: ${e.message}", )
+                .addOnFailureListener { e ->
+                    Log.e("TAG", "getAllToDoesFromFireStore: ${e.message}")
                 }
 
         }
@@ -172,26 +201,25 @@ class ToDoRepositoryImpl(
     }
 
 
-   private fun reOrderToDoList(list:List<ToDo>):List<ToDo>{
+    private fun reOrderToDoList(list: List<ToDo>): List<ToDo> {
 
         val reListWithIsDone = mutableListOf<ToDo>()
         val reListWithoutIsDone = mutableListOf<ToDo>()
         val reArrangedList = mutableListOf<ToDo>()
 
         list.forEach { toDo ->
-            if (toDo.isDone){
+            if (toDo.isDone) {
                 reListWithIsDone.add(toDo)
-            }
-            else{
+            } else {
                 reListWithoutIsDone.add(toDo)
             }
         }
-       reListWithoutIsDone.forEach {
-           reArrangedList.add(it)
-       }
-       reListWithIsDone.forEach {
-           reArrangedList.add(it)
-       }
+        reListWithoutIsDone.forEach {
+            reArrangedList.add(it)
+        }
+        reListWithIsDone.forEach {
+            reArrangedList.add(it)
+        }
 
 
         return reArrangedList
