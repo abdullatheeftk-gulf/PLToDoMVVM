@@ -1,7 +1,5 @@
 package com.example.pltodomvvm
 
-
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -22,7 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-private const val TAG = "MainActivity"
+//private const val TAG = "MainActivity"
 
 
 @ExperimentalFoundationApi

@@ -32,8 +32,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth,db:FirebaseFirestore,context: Context):ToDoRepository =
-        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth, fdb = db, context =context )
+    fun provideToDoRepository(toDoDatabase: ToDoDatabase,auth:FirebaseAuth,db:FirebaseFirestore):ToDoRepository =
+        ToDoRepositoryImpl(toDoDao = toDoDatabase.toDoDao, auth = auth, fdb = db )
 
     @Provides
     @Singleton
@@ -44,9 +44,5 @@ object AppModule {
     fun provideFirebaseFireStore():FirebaseFirestore = Firebase.firestore
 
 
-    @Provides
-    @Singleton
-    fun provideContext(app:Application):Context{
-        return app.applicationContext
-    }
+
 }

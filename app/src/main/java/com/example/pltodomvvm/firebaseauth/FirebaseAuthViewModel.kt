@@ -1,12 +1,10 @@
 package com.example.pltodomvvm.firebaseauth
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.FirebaseAuthState
 import com.example.pltodomvvm.util.Routes
@@ -15,27 +13,24 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import javax.annotation.meta.When
 import javax.inject.Inject
 
-private const val TAG = "FirebaseAuthViewModel"
+//private const val TAG = "FirebaseAuthViewModel"
 
 @HiltViewModel
 class FirebaseAuthViewModel @Inject constructor(
     private val repository: ToDoRepository
 ) : ViewModel() {
 
-    var email by mutableStateOf<String>("")
+    var email by mutableStateOf("")
         private set
 
-    var password by mutableStateOf<String>("")
+    var password by mutableStateOf("")
         private set
 
     var confirmPassword by mutableStateOf("")
         private set
 
-    var isAuthenticated by mutableStateOf(false)
-        private set
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -75,15 +70,10 @@ class FirebaseAuthViewModel @Inject constructor(
                             is FirebaseAuthState.OnAuthSuccess -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
 
-                                Log.i(
-                                    TAG,
-                                    "sign in onAuthSuccess: ${authState.authResult.user?.email}"
-                                )
                                 sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST))
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
-                                Log.e(TAG, "sign in onAuthFailure: ${authState.authException}")
                                 sendUiEvent(
                                     UiEvent.ShowSnackBar(
                                         message = "sign in There have some error when authenticating, Error code is ${authState.authException.message}"
@@ -93,7 +83,6 @@ class FirebaseAuthViewModel @Inject constructor(
                             else -> {
 
                                 sendUiEvent(UiEvent.ShowProgressBar)
-                                Log.i(TAG, "sign in AuthState: Loading---")
                             }
                         }
                     }
@@ -140,15 +129,11 @@ class FirebaseAuthViewModel @Inject constructor(
                         when (authState) {
                             is FirebaseAuthState.OnAuthSuccess -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
-                                Log.i(
-                                    TAG,
-                                    "register onAuthSuccess: ${authState.authResult.user?.email}"
-                                )
+
                                 sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST))
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
-                                Log.e(TAG, "register onAuthFailure:${authState.authException} ")
                                 sendUiEvent(
                                     UiEvent.ShowSnackBar(
                                         message = "register There have some error when authenticating, Error code is ${authState.authException.message}"
@@ -157,7 +142,6 @@ class FirebaseAuthViewModel @Inject constructor(
                             }
                             else -> {
                                 sendUiEvent(UiEvent.ShowProgressBar)
-                                Log.i(TAG, "register AuthState: Loading---")
                             }
                         }
                     }

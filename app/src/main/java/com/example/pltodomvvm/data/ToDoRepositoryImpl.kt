@@ -1,31 +1,20 @@
 package com.example.pltodomvvm.data
 
-import android.content.Context
 import android.util.Log
-import androidx.work.*
 import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.FirebaseAuthState
-import com.example.pltodomvvm.workmanager.MyWork
-import com.google.firebase.FirebaseException
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.toObject
-import com.google.gson.Gson
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
 import java.util.*
-import kotlin.reflect.KClass
 
-private const val TAG = "ToDoRepositoryImpl"
+//private const val TAG = "ToDoRepositoryImpl"
 
 class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
     private val auth: FirebaseAuth,
     private val fdb: FirebaseFirestore,
-    private val context: Context
 ) : ToDoRepository {
 
 
@@ -105,8 +94,6 @@ class ToDoRepositoryImpl(
         auth.currentUser?.let { fsu ->
             val toDos = mutableListOf<ToDo>()
             fdb.collection(fsu.email!!)
-                .orderBy("isDone",Query.Direction.ASCENDING)
-                .orderBy("id",Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener { querySnapShot ->
                     querySnapShot.documents.forEach { documentSnapshot ->
@@ -140,8 +127,7 @@ class ToDoRepositoryImpl(
                         } catch (e: Exception) {
                         }
                     }
-
-                    callBack(toDos)
+                    callBack(reOrderToDoList(toDos.asReversed()))
                 }
                 .addOnFailureListener {e->
                     Log.e("TAG", "getAllToDoesFromFireStore: ${e.message}", )
@@ -186,8 +172,28 @@ class ToDoRepositoryImpl(
     }
 
 
-    fun reOrderToDoList(list:List<ToDo>):List<ToDo>{
+   private fun reOrderToDoList(list:List<ToDo>):List<ToDo>{
 
-        return emptyList<ToDo>()
+        val reListWithIsDone = mutableListOf<ToDo>()
+        val reListWithoutIsDone = mutableListOf<ToDo>()
+        val reArrangedList = mutableListOf<ToDo>()
+
+        list.forEach { toDo ->
+            if (toDo.isDone){
+                reListWithIsDone.add(toDo)
+            }
+            else{
+                reListWithoutIsDone.add(toDo)
+            }
+        }
+       reListWithoutIsDone.forEach {
+           reArrangedList.add(it)
+       }
+       reListWithIsDone.forEach {
+           reArrangedList.add(it)
+       }
+
+
+        return reArrangedList
     }
 }

@@ -21,7 +21,7 @@ import com.example.pltodomvvm.util.RequestState
 import com.example.pltodomvvm.util.UiEvent
 import kotlinx.coroutines.flow.collect
 
-private const val TAG = "ToDoListScreen"
+//private const val TAG = "ToDoListScreen"
 
 
 @ExperimentalFoundationApi

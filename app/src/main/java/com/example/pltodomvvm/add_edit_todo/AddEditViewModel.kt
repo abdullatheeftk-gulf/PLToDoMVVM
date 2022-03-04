@@ -1,6 +1,5 @@
 package com.example.pltodomvvm.add_edit_todo
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,7 +19,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
-private const val TAG = "AddEditViewModel"
+//private const val TAG = "AddEditViewModel"
 
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
@@ -50,7 +49,6 @@ class AddEditViewModel @Inject constructor(
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo
                 }
-                Log.d(TAG, "$todo: ")
             }
 
         }

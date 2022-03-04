@@ -1,7 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
 
-import android.util.Log
+
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -107,7 +107,7 @@ class ToDoViewModel @Inject constructor(
                 repository.getTodos().collect {listOfToDo->
                     _allToDos.value = RequestState.Success(listOfToDo)
                     repository.getAllToDoesFromFireStore {fireToDoList->
-                       _allToDos.value = RequestState.Success(fireToDoList)
+                        _allToDos.value = RequestState.Success(fireToDoList)
                     }
                 }
             }
