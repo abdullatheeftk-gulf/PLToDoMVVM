@@ -7,13 +7,16 @@ import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.FirebaseAuthState
 import com.example.pltodomvvm.workmanager.MyWork
 import com.google.firebase.FirebaseException
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.toObject
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 import kotlin.reflect.KClass
 
 private const val TAG = "ToDoRepositoryImpl"
@@ -42,7 +45,7 @@ class ToDoRepositoryImpl(
         callBack(FireStoreInsertState.OnProgress)
         auth.currentUser?.let { firebaseUser ->
             fdb.collection(firebaseUser.email!!)
-                .document(syncToDo.openDate)
+                .document(syncToDo.openDate.toString())
                 .set(syncToDo)
                 .addOnSuccessListener {
                     callBack(FireStoreInsertState.OnSuccess(syncToDo))
@@ -80,13 +83,11 @@ class ToDoRepositoryImpl(
     ) {
         auth.currentUser?.let { fsu ->
             fdb.collection(fsu.email!!)
-                .document(deleteFireToDo.openDate)
+                .document(deleteFireToDo.openDate.toString())
                 .delete()
                 .addOnSuccessListener {
-                    Log.i(TAG, "deleted ${deleteFireToDo.openDate}")
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "deleteFromFireStore: ${it.message}", )
                 }
         }
     }
@@ -101,33 +102,51 @@ class ToDoRepositoryImpl(
     }
 
     override fun getAllToDoesFromFireStore(callBack: (listOfToDo: List<ToDo>) -> Unit) {
-        auth.currentUser?.let { firebaseUser ->
+        auth.currentUser?.let { fsu ->
             val toDos = mutableListOf<ToDo>()
-            fdb.collection(firebaseUser.email!!)
+            fdb.collection(fsu.email!!)
+                .orderBy("isDone",Query.Direction.ASCENDING)
+                .orderBy("id",Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener { querySnapshot ->
-                    querySnapshot.documents.forEach { documentSnapShot ->
-                        val title = documentSnapShot.data?.get("title").toString()
-                        val description = documentSnapShot.data?.get("description").toString()
-                        val isDone = documentSnapShot.data?.get("isDone").toString().toBoolean()
-                        val isSyncFinished =
-                            documentSnapShot.data?.get("isSyncFinished").toString().toBoolean()
-                        val id = documentSnapShot.data?.get("id").toString().toInt()
-                        val openDate = documentSnapShot.data?.get("openDate").toString().toLong()
-                        val todo = ToDo(
-                            title = title,
-                            description = description,
-                            isDone = isDone,
-                            isSyncFinished = isSyncFinished,
-                            id = id,
-                            openDate = Converters().fromTimestamp(openDate)!!
-                        )
-                        toDos.add(todo)
+                .addOnSuccessListener { querySnapShot ->
+                    querySnapShot.documents.forEach { documentSnapshot ->
+                        val fireMap = documentSnapshot.data
+                        try {
+                            val openTimeStamp = fireMap?.get("openDate") as Timestamp
+                            val closeTimestamp = fireMap["closeDate"] as Timestamp
+                            val title = fireMap["title"].toString()
+                            val description = fireMap["description"].toString()
+                            val isDone = fireMap["isDone"] as Boolean
+                            val isSyncFinished = fireMap["isSyncFinished"] as Boolean
+                            val id = fireMap["id"].toString().toInt()
+
+                            val openDate = openTimeStamp.toDate()
+                            var closeDate: Date? = closeTimestamp.toDate()
+
+                            if (!isDone) {
+                                closeDate = null
+                            }
+
+                            val toDo = ToDo(
+                                title = title,
+                                description = description,
+                                id = id,
+                                isDone = isDone,
+                                isSyncFinished = isSyncFinished,
+                                openDate = openDate,
+                                closeDate = closeDate
+                            )
+                            toDos.add(toDo)
+                        } catch (e: Exception) {
+                        }
                     }
+
                     callBack(toDos)
                 }
-                .addOnFailureListener {
+                .addOnFailureListener {e->
+                    Log.e("TAG", "getAllToDoesFromFireStore: ${e.message}", )
                 }
+
         }
     }
 
@@ -164,5 +183,11 @@ class ToDoRepositoryImpl(
             .addOnFailureListener {
                 callBack(FirebaseAuthState.OnAuthFailure(it))
             }
+    }
+
+
+    fun reOrderToDoList(list:List<ToDo>):List<ToDo>{
+
+        return emptyList<ToDo>()
     }
 }

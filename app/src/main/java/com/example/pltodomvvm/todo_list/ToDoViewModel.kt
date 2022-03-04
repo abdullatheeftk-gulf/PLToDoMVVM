@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -54,12 +55,12 @@ class ToDoViewModel @Inject constructor(
                         repository.insertToDoFireStore(
                             syncToDo = FireToDo(
                                 id = idLong.toInt(),
-                                openDate = mToDo.openDate.toString(),
+                                openDate = mToDo.openDate,
                                 title = mToDo.title,
                                 description = mToDo.description,
                                 isDone = mToDo.isDone,
                                 isSyncFinished = true,
-                                closeDate = mToDo.closeDate.toString()
+                                closeDate = mToDo.closeDate
                             )
                         ) { fsi ->
                             when (fsi) {
@@ -99,14 +100,15 @@ class ToDoViewModel @Inject constructor(
 
 
     private fun getAllToDos() {
-        /*repository.getAllToDoesFromFireStore {
-            _allToDos.value = RequestState.Success(it)
-        }*/
+
         _allToDos.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 repository.getTodos().collect {listOfToDo->
                     _allToDos.value = RequestState.Success(listOfToDo)
+                    repository.getAllToDoesFromFireStore {fireToDoList->
+                       _allToDos.value = RequestState.Success(fireToDoList)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -136,8 +138,8 @@ class ToDoViewModel @Inject constructor(
                                 id = toDoListEvent.toDo.id!!,
                                 isDone = toDoListEvent.toDo.isDone,
                                 isSyncFinished = toDoListEvent.toDo.isSyncFinished,
-                                openDate = toDoListEvent.toDo.openDate.toString(),
-                                closeDate = toDoListEvent.toDo.closeDate.toString()
+                                openDate = toDoListEvent.toDo.openDate,
+                                closeDate = toDoListEvent.toDo.closeDate
                             )
                         ){
 
@@ -161,8 +163,8 @@ class ToDoViewModel @Inject constructor(
                                 description = toDoListEvent.toDo.description,
                                 isDone = toDoListEvent.isDone,
                                 isSyncFinished = toDoListEvent.toDo.isSyncFinished,
-                                openDate = toDoListEvent.toDo.openDate.toString(),
-                                closeDate = toDoListEvent.closeDate.toString()
+                                openDate = toDoListEvent.toDo.openDate,
+                                closeDate = toDoListEvent.closeDate
                             )
                         ){fsi->
                             when(fsi){
@@ -195,8 +197,8 @@ class ToDoViewModel @Inject constructor(
                                     id = insert.id!!,
                                     isDone = insert.isDone,
                                     isSyncFinished = insert.isSyncFinished,
-                                    openDate = insert.openDate.toString(),
-                                    closeDate = insert.closeDate.toString()
+                                    openDate = insert.openDate,
+                                    closeDate = insert.closeDate
                                 )
                             ){
 
