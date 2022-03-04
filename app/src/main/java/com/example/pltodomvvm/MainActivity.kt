@@ -1,6 +1,6 @@
 package com.example.pltodomvvm
 
-import android.os.Bundle
+
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,15 +9,16 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.findNavController
 import androidx.navigation.navArgument
 import com.example.pltodomvvm.add_edit_todo.AddEditToDoScreen
+import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.firebaseauth.FireBaseAuthLoginScreen
 import com.example.pltodomvvm.firebaseauth.FirebaseAuthRegisterScreen
 import com.example.pltodomvvm.todo_list.ToDoListScreen
 import com.example.pltodomvvm.ui.theme.PLToDoMVVMTheme
 import com.example.pltodomvvm.util.Routes
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -31,11 +32,19 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var auth: FirebaseAuth
+
+    @Inject
+    lateinit var repository: ToDoRepository
+
+    @Inject
+    lateinit var fdb:FirebaseFirestore
+
     private var isAuthenticated: Boolean = false
 
 
     override fun onStart() {
         super.onStart()
+
         val currentUser = auth.currentUser
         isAuthenticated = currentUser != null
         setContent {
@@ -46,6 +55,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = Routes.SPLASH_SCREEN,
                 ) {
                     composable(route = Routes.SPLASH_SCREEN) {
+
                         SplashScreen(isAuthenticated = isAuthenticated) {
                             navController.navigate(it) {
                                 popUpTo(Routes.SPLASH_SCREEN) {
@@ -82,9 +92,10 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     ) {
+
                         ToDoListScreen(onNavigate = {
                             navController.navigate(it.route)
-                        }
+                        },
                         )
                     }
                     composable(
@@ -96,6 +107,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     ) {
+
                         AddEditToDoScreen(onNavigate = {
                             navController.navigate(it) {
                                 popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
@@ -103,8 +115,8 @@ class MainActivity : ComponentActivity() {
                                 }
 
                             }
-
-                        })
+                        }
+                        )
                     }
                 }
 
@@ -115,8 +127,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-
-        Log.i(TAG, "onBackPressed: ")
     }
 
 

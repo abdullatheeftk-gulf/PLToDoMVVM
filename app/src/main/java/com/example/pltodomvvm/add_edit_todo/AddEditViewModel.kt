@@ -1,6 +1,5 @@
 package com.example.pltodomvvm.add_edit_todo
 
-
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
-import com.example.pltodomvvm.util.FireStoreInsertState
 import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
 import com.google.gson.Gson
@@ -19,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 private const val TAG = "AddEditViewModel"
@@ -32,7 +31,7 @@ class AddEditViewModel @Inject constructor(
     var todo by mutableStateOf<ToDo?>(null)
         private set
 
-    var title by mutableStateOf<String>("")
+    var title by mutableStateOf("")
         private set
 
     var description by mutableStateOf("")
@@ -51,6 +50,7 @@ class AddEditViewModel @Inject constructor(
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo
                 }
+                Log.d(TAG, "$todo: ")
             }
 
         }
@@ -84,13 +84,14 @@ class AddEditViewModel @Inject constructor(
                         title = title,
                         description = description,
                         isDone = todo?.isDone ?: false,
-                        id = todo?.id
+                        id = todo?.id,
+                        openDate = todo?.openDate ?: Date(),
+                        closeDate = todo?.closeDate,
+                        isSyncFinished = todo?.isSyncFinished ?: true
                     )
-                    Log.i(TAG, "onEvent: $toDoToSend")
                     val gson = Gson()
                     val jsonToDo = gson.toJson(toDoToSend)
 
-                    Log.i("TAG", "AddToDoViewModel: $jsonToDo")
                     sendUiEvent(UiEvent.Navigate(route = Routes.TODO_LIST + "?syncToDo=${jsonToDo}"))
 
 
@@ -106,7 +107,6 @@ class AddEditViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        Log.i(TAG, "onCleared: viewModel")
         super.onCleared()
     }
 }

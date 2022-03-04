@@ -6,15 +6,22 @@ import com.example.pltodomvvm.util.FirebaseAuthState
 import kotlinx.coroutines.flow.Flow
 
 interface ToDoRepository {
-    suspend fun insertToDo(toDo: ToDo,callBack: (fireStoreInsertState:FireStoreInsertState)->Unit)
+    suspend fun insertToDo(toDo: ToDo,callBack: suspend (id:Long)->Unit)
 
-    suspend fun addToDo(toDo: ToDo)
+    suspend fun insertToDoFireStore(syncToDo: FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
-    suspend fun deleteToDo(toDo: ToDo)
+    suspend fun getItemExistsInFDB(queryToDo: ToDo,callBack: (status:Boolean) -> Unit)
+
+    suspend fun deleteToDo(deleteToDo: ToDo,callBack: suspend () -> Unit)
+
+    suspend fun deleteFromFireStore(deleteFireToDo:FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
     suspend fun getToDoById(id:Int):ToDo?
 
     fun getTodos(): Flow<List<ToDo>>
+
+
+    fun getAllToDoesFromFireStore(callBack:(listOfToDo:List<ToDo>)->Unit)
 
 
     //firebase auth

@@ -1,8 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.BackHandler
+
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -14,7 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
@@ -30,7 +28,7 @@ private const val TAG = "ToDoListScreen"
 @Composable
 fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
-    viewModel: ToDoViewModel = hiltViewModel()
+    viewModel: ToDoViewModel= hiltViewModel()
 ) {
 
     val lazyColumnState= remember {
@@ -123,12 +121,14 @@ fun ToDoListScreen(
                                 }
                                 .padding(16.dp)
                                 .animateItemPlacement(animationSpec = tween(300)),
+                            viewModel = viewModel
                         ) { mToDo ->
                             viewModel.toDoForDelete.value = mToDo
                             openDialog = true
                             scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
 
                         }
+                        Divider(color = Color.Green)
                     }
                 }
             } else {

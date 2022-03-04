@@ -9,108 +9,79 @@ import com.example.pltodomvvm.workmanager.MyWork
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
+import kotlin.reflect.KClass
 
 private const val TAG = "ToDoRepositoryImpl"
 
 class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
     private val auth: FirebaseAuth,
-    private val fdb:FirebaseFirestore,
-    private val context:Context
+    private val fdb: FirebaseFirestore,
+    private val context: Context
 ) : ToDoRepository {
+
 
     override suspend fun insertToDo(
         toDo: ToDo,
+        callBack: suspend (id: Long) -> Unit
+    ) {
+        val id = toDoDao.insertToDo(toDo = toDo)
+        callBack(id)
+
+    }
+
+    override suspend fun insertToDoFireStore(
+        syncToDo: FireToDo,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
-       val id =  toDoDao.insertToDo(toDo = toDo)
-        auth.currentUser?.let {
-            callBack(FireStoreInsertState.OnProgress)
-            fdb.collection(it.email!!).document(id.toString())
-                .set(toDo.copy(isSyncFinished = true,id=id.toInt()))
-                .addOnSuccessListener {
-
-                }
-                .addOnFailureListener {e->
-                    callBack(FireStoreInsertState.OnFailure(e))
-                }
-                .addOnCompleteListener { task->
-                   if (task.isComplete && task.isSuccessful){
-                       callBack(FireStoreInsertState.OnSuccess(toDo.copy(isSyncFinished = true,id=id.toInt())))
-                   }
-
-                }
-        }
-    }
-
-    override suspend fun addToDo(toDo: ToDo) {
-        toDoDao.insertToDo(toDo)
-    }
-
-
-
-    /*override suspend fun insertToDo(toDo: ToDo,callBack:suspend (itemId:Long)->Unit) {
-       val rowId = toDoDao.insertToDo(toDo = toDo)
-        callBack(rowId)
-    }
-
-    override suspend fun insertIntoFireStore(
-        toDo: ToDo,
-        callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
-    ) {
-        *//*val addData = Data.Builder()
-            .putString("syncToDo",Gson().toJson(toDo))
-            .build()
-        val workManager = WorkManager.getInstance(context)
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val addRequest = OneTimeWorkRequest.Builder(MyWork::class.java)
-            .setConstraints(constraints)
-            .setInputData(addData)
-            .build()
-        workManager.enqueue(addRequest)*//*
-
-
-
-
-
-
-      //  Log.i(TAG, "insertIntoFireStore: $context")
-        auth.currentUser?.let {
-            val syncToDo = toDo.copy(isSyncFinished = true)
-            callBack(FireStoreInsertState.OnProgress)
-            fdb.collection(it.email!!)
-                .document(toDo.id.toString())
+        callBack(FireStoreInsertState.OnProgress)
+        auth.currentUser?.let { firebaseUser ->
+            fdb.collection(firebaseUser.email!!)
+                .document(syncToDo.openDate.toString())
                 .set(syncToDo)
                 .addOnSuccessListener {
-                    callBack(FireStoreInsertState.OnSuccess(inToDo = syncToDo))
+                    callBack(FireStoreInsertState.OnSuccess(syncToDo))
                 }
-                .addOnFailureListener {exception->
-                    callBack(FireStoreInsertState.OnFailure(exception = exception))
+                .addOnFailureListener { e ->
+                    callBack(FireStoreInsertState.OnFailure(e))
                 }
         }
-    }*/
+    }
 
-
-    override suspend fun deleteToDo(toDo: ToDo) {
-        deleteToDoFromRoom(toDo = toDo){
-            Log.i(TAG, "deleteToDo: $it")
-           // fdb.
+    override suspend fun getItemExistsInFDB(queryToDo: ToDo, callBack: (status: Boolean) -> Unit) {
+        auth.currentUser?.let {
+            val documentRef = fdb.collection(it.email!!).document(queryToDo.id.toString())
+            documentRef.get()
+                .addOnSuccessListener { ds ->
+                    if (ds != null) {
+                        callBack(true)
+                    } else {
+                        callBack(false)
+                    }
+                }.addOnFailureListener {
+                }
         }
     }
-    
-    private suspend fun deleteToDoFromRoom(toDo: ToDo,callBack: (id: Int) -> Unit){
-        val id = toDo.id!!
-        Log.i(TAG, "deleteToDoFromRoom: $id")
-        toDoDao.deleteToDo(toDo = toDo)
-        callBack(id)
-        
+
+
+    override suspend fun deleteToDo(deleteToDo: ToDo,callBack: suspend () -> Unit) {
+        toDoDao.deleteToDo(toDo = deleteToDo)
+        callBack()
     }
+
+    override suspend fun deleteFromFireStore(
+        deleteFireToDo: FireToDo,
+        callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
+    ) {
+
+    }
+
+
 
     override suspend fun getToDoById(id: Int): ToDo? {
         return toDoDao.getToDoById(id = id)
@@ -119,6 +90,38 @@ class ToDoRepositoryImpl(
     override fun getTodos(): Flow<List<ToDo>> {
         return toDoDao.getTodos()
     }
+
+    override fun getAllToDoesFromFireStore(callBack: (listOfToDo: List<ToDo>) -> Unit) {
+        auth.currentUser?.let { firebaseUser ->
+            val toDos = mutableListOf<ToDo>()
+            fdb.collection(firebaseUser.email!!)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    querySnapshot.documents.forEach { documentSnapShot ->
+                        val title = documentSnapShot.data?.get("title").toString()
+                        val description = documentSnapShot.data?.get("description").toString()
+                        val isDone = documentSnapShot.data?.get("isDone").toString().toBoolean()
+                        val isSyncFinished =
+                            documentSnapShot.data?.get("isSyncFinished").toString().toBoolean()
+                        val id = documentSnapShot.data?.get("id").toString().toInt()
+                        val openDate = documentSnapShot.data?.get("openDate").toString().toLong()
+                        val todo = ToDo(
+                            title = title,
+                            description = description,
+                            isDone = isDone,
+                            isSyncFinished = isSyncFinished,
+                            id = id,
+                            openDate = Converters().fromTimestamp(openDate)!!
+                        )
+                        toDos.add(todo)
+                    }
+                    callBack(toDos)
+                }
+                .addOnFailureListener {
+                }
+        }
+    }
+
 
     override fun createUserWithEmailAndPassword(
         email: String,
@@ -130,16 +133,11 @@ class ToDoRepositoryImpl(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     callBack(FirebaseAuthState.OnAuthSuccess(task.result))
-                    Log.d(TAG, "createUserWithEmailAndPassword: ${task.result.user?.email} ")
                 }
-
             }
             .addOnFailureListener {
-
                 callBack(FirebaseAuthState.OnAuthFailure(it))
-                Log.e(TAG, "createUserWithEmailAndPassword: ${it}")
             }
-
     }
 
     override fun signInWithEmailAndPassword(
@@ -152,14 +150,10 @@ class ToDoRepositoryImpl(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     callBack(FirebaseAuthState.OnAuthSuccess(task.result))
-                    Log.d(TAG, "signInUserWithEmailAndPassword: ${task.result.user?.email} ")
                 }
-
             }
             .addOnFailureListener {
-
                 callBack(FirebaseAuthState.OnAuthFailure(it))
-                Log.e(TAG, "signInUserWithEmailAndPassword: ${it.message}")
             }
     }
 }
