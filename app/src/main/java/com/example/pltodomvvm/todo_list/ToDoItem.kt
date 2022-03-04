@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -112,9 +113,15 @@ fun ToDoItem(
                 Text(text = it)
             }
             Spacer(modifier = modifier.height(2.dp))
-            Text(text = "Open time: ${toDo.openDate}")
+            Text(
+                text = "Open time: ${toDo.openDate}",
+                color = Color.Green
+            )
             toDo.closeDate?.let {
-                Text(text = "Close time: $it")
+                Text(
+                    text = "Close time: $it",
+                    color = Color.Red
+                )
             }
         }
         Checkbox(

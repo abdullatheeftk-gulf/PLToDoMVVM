@@ -4,8 +4,8 @@ package com.example.pltodomvvm.data
 
 
 data class FireToDo(
-    val openDate: Long,
-    val closeDate: Long?=null,
+    val openDate: String,
+    val closeDate: String?=null,
     val title: String,
     val description: String?,
     @field:JvmField

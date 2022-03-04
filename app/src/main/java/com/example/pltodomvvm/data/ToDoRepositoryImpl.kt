@@ -42,7 +42,7 @@ class ToDoRepositoryImpl(
         callBack(FireStoreInsertState.OnProgress)
         auth.currentUser?.let { firebaseUser ->
             fdb.collection(firebaseUser.email!!)
-                .document(syncToDo.openDate.toString())
+                .document(syncToDo.openDate)
                 .set(syncToDo)
                 .addOnSuccessListener {
                     callBack(FireStoreInsertState.OnSuccess(syncToDo))
@@ -69,7 +69,7 @@ class ToDoRepositoryImpl(
     }
 
 
-    override suspend fun deleteToDo(deleteToDo: ToDo,callBack: suspend () -> Unit) {
+    override suspend fun deleteToDo(deleteToDo: ToDo, callBack: suspend () -> Unit) {
         toDoDao.deleteToDo(toDo = deleteToDo)
         callBack()
     }
@@ -78,9 +78,18 @@ class ToDoRepositoryImpl(
         deleteFireToDo: FireToDo,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
-
+        auth.currentUser?.let { fsu ->
+            fdb.collection(fsu.email!!)
+                .document(deleteFireToDo.openDate)
+                .delete()
+                .addOnSuccessListener {
+                    Log.i(TAG, "deleted ${deleteFireToDo.openDate}")
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "deleteFromFireStore: ${it.message}", )
+                }
+        }
     }
-
 
 
     override suspend fun getToDoById(id: Int): ToDo? {

@@ -74,7 +74,7 @@ fun ToDoListScreen(
 
     ShowAlertDialog(
         title = "Do you want to delete ${toDoForDelete?.title}",
-        message = "I will erase from your database",
+        message = "It will erase from your database & FireStore",
         openDialog = openDialog,
         onCloseClicked = {
             openDialog = false
@@ -128,7 +128,7 @@ fun ToDoListScreen(
                             scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
 
                         }
-                        Divider(color = Color.Green)
+                        Divider(color = Color.DarkGray)
                     }
                 }
             } else {
