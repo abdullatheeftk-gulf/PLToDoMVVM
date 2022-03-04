@@ -105,8 +105,8 @@ class ToDoViewModel @Inject constructor(
         _allToDos.value = RequestState.Loading
         try {
             viewModelScope.launch {
-                repository.getTodos().collect {
-                    _allToDos.value = RequestState.Success(it)
+                repository.getTodos().collect {listOfToDo->
+                    _allToDos.value = RequestState.Success(listOfToDo)
                 }
             }
         } catch (e: Exception) {
