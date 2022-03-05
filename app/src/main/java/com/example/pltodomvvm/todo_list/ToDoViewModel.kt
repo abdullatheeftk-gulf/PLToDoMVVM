@@ -1,7 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
 
-
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -44,9 +43,14 @@ class ToDoViewModel @Inject constructor(
     private var _allToDos = MutableStateFlow<RequestState<List<ToDo>>>(RequestState.Idle)
     val allToDos: StateFlow<RequestState<List<ToDo>>> = _allToDos
     
+    private var operationCounter = 0
+
+    private var i = 0;
+
 
     init {
         setOperationCounter()
+        setCounter()
         getAllToDos()
         val toDoInJson = savedStateHandle.get<String>("syncToDo")
         if (toDoInJson != null) {
@@ -101,29 +105,55 @@ class ToDoViewModel @Inject constructor(
 
     }
 
-    private fun setOperationCounter(){
+    private fun setOperationCounter() {
         viewModelScope.launch {
             repository.incrementCounter()
         }
     }
+    
+   private fun setCounter(){
+        viewModelScope.launch { 
+            repository.getOperationCounterFlow().collect {
+                operationCounter = it
 
-
+            }
+        }
+    }
 
 
     private fun getAllToDos() {
+
         _allToDos.value = RequestState.Loading
         try {
             viewModelScope.launch {
-                repository.getTodos().collect {listOfToDo->
+                repository.getTodos().collect { listOfToDo ->
                     _allToDos.value = RequestState.Success(listOfToDo)
-                    repository.getOperationCounterFlow().collect {
-                        Log.i(TAG, "operation Counter: $it ")
-                        if (it<=1) {
-                            repository.getAllToDoesFromFireStore { fireToDoList ->
+                     i++
+                    if(operationCounter<=1 && i<=1){
+                        Log.i(TAG, " inside fireStore: $operationCounter $i")
+                         repository.getAllToDoesFromFireStore { fireToDoList ->
+                                val toDos = mutableListOf<ToDo>()
+                                fireToDoList.forEach { fToDo ->
+                                    val mToDo = ToDo(
+                                        title = fToDo.title,
+                                        description = fToDo.description,
+                                        id = fToDo.id,
+                                        isDone = fToDo.isDone,
+                                        isSyncFinished = fToDo.isSyncFinished,
+                                        openDate = fToDo.openDate,
+                                        closeDate = fToDo.closeDate
+                                    )
+                                    toDos.add(mToDo)
+                                }
+                                viewModelScope.launch {
+                                    repository.insertAllToDos(toDos = toDos)
+                                }
                                 _allToDos.value = RequestState.Success(fireToDoList)
                             }
-                        }
                     }
+
+                        
+                    
 
                 }
             }
@@ -140,7 +170,7 @@ class ToDoViewModel @Inject constructor(
             is ToDoListEvent.DeleteToDo -> {
                 viewModelScope.launch {
                     deleteToDo = toDoListEvent.toDo
-                    repository.deleteToDo(toDoListEvent.toDo){
+                    repository.deleteToDo(toDoListEvent.toDo) {
                         sendUiEvent(
                             UiEvent.ShowSnackBar(
                                 message = "ToDo deleted: ${toDoListEvent.toDo.title}",
@@ -157,7 +187,7 @@ class ToDoViewModel @Inject constructor(
                                 openDate = toDoListEvent.toDo.openDate,
                                 closeDate = toDoListEvent.toDo.closeDate
                             )
-                        ){
+                        ) {
 
                         }
                     }
@@ -171,7 +201,7 @@ class ToDoViewModel @Inject constructor(
                             isDone = toDoListEvent.isDone,
                             closeDate = toDoListEvent.closeDate,
                         )
-                    ) {id ->
+                    ) { id ->
                         repository.insertToDoFireStore(
                             syncToDo = FireToDo(
                                 id = id.toInt(),
@@ -182,15 +212,15 @@ class ToDoViewModel @Inject constructor(
                                 openDate = toDoListEvent.toDo.openDate,
                                 closeDate = toDoListEvent.closeDate
                             )
-                        ){fsi->
-                            when(fsi){
-                                is FireStoreInsertState.OnProgress->{
+                        ) { fsi ->
+                            when (fsi) {
+                                is FireStoreInsertState.OnProgress -> {
                                     onEvent(ToDoListEvent.SyncInProgress(id.toInt()))
                                 }
-                                is FireStoreInsertState.OnSuccess->{
+                                is FireStoreInsertState.OnSuccess -> {
                                     onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
                                 }
-                                is FireStoreInsertState.OnFailure->{
+                                is FireStoreInsertState.OnFailure -> {
                                     onEvent(ToDoListEvent.SyncFailed(id.toInt(), fsi.exception))
                                 }
                             }
@@ -204,8 +234,8 @@ class ToDoViewModel @Inject constructor(
             }
             is ToDoListEvent.OnUndoClick -> {
                 viewModelScope.launch {
-                    deleteToDo?.let {insert->
-                        repository.insertToDo(insert) {idLong->
+                    deleteToDo?.let { insert ->
+                        repository.insertToDo(insert) { idLong ->
                             repository.insertToDoFireStore(
                                 syncToDo = FireToDo(
                                     title = insert.title,
@@ -216,7 +246,7 @@ class ToDoViewModel @Inject constructor(
                                     openDate = insert.openDate,
                                     closeDate = insert.closeDate
                                 )
-                            ){
+                            ) {
 
                             }
                         }

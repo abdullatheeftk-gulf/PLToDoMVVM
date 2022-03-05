@@ -8,6 +8,9 @@ interface ToDoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertToDo(toDo: ToDo):Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllToDos(toDos:List<ToDo>)
+
     @Delete
     suspend fun deleteToDo(toDo: ToDo)
 

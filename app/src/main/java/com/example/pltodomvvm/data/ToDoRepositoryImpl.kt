@@ -41,6 +41,11 @@ class ToDoRepositoryImpl(
 
     }
 
+    override suspend fun insertAllToDos(toDos: List<ToDo>) {
+        toDoDao.insertAllToDos(toDos = toDos)
+    }
+
+
     override suspend fun insertToDoFireStore(
         syncToDo: FireToDo,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit

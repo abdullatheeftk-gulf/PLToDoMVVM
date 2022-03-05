@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.Flow
 interface ToDoRepository {
     suspend fun insertToDo(toDo: ToDo,callBack: suspend (id:Long)->Unit)
 
+    suspend fun insertAllToDos(toDos:List<ToDo>)
+
     suspend fun insertToDoFireStore(syncToDo: FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
     suspend fun getItemExistsInFDB(queryToDo: ToDo,callBack: (status:Boolean) -> Unit)
