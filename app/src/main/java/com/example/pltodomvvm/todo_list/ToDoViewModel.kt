@@ -129,8 +129,7 @@ class ToDoViewModel @Inject constructor(
                 repository.getTodos().collect { listOfToDo ->
                     _allToDos.value = RequestState.Success(listOfToDo)
                      i++
-                    if(operationCounter<=1 && i<=1){
-                        Log.i(TAG, " inside fireStore: $operationCounter $i")
+                    if(operationCounter<1 && i<=1){
                          repository.getAllToDoesFromFireStore { fireToDoList ->
                                 val toDos = mutableListOf<ToDo>()
                                 fireToDoList.forEach { fToDo ->
@@ -261,11 +260,11 @@ class ToDoViewModel @Inject constructor(
             }
             is ToDoListEvent.SyncInStopped -> {
                 sendToDoSyncStatus(ToDoSyncStatus.SyncStopped(toDoListEvent.id))
-                sendUiEvent(
+               /* sendUiEvent(
                     UiEvent.ShowSnackBar(
                         message = "${toDoListEvent.id} is synced to firestore"
                     )
-                )
+                )*/
 
             }
             is ToDoListEvent.SyncFailed -> {
