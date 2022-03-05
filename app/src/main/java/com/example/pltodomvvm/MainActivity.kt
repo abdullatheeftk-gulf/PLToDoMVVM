@@ -1,5 +1,6 @@
 package com.example.pltodomvvm
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -8,6 +9,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PurchasesUpdatedListener
 import com.example.pltodomvvm.add_edit_todo.AddEditToDoScreen
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.firebaseauth.FireBaseAuthLoginScreen
@@ -20,12 +25,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-//private const val TAG = "MainActivity"
+private const val TAG = "MainActivity"
 
 
 @ExperimentalFoundationApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
 
 
     @Inject
@@ -37,11 +43,27 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var fdb:FirebaseFirestore
 
+    @Inject
+    lateinit var billingClient:BillingClient
+
     private var isAuthenticated: Boolean = false
 
 
     override fun onStart() {
         super.onStart()
+        
+        billingClient.startConnection(object:BillingClientStateListener{
+            override fun onBillingServiceDisconnected() {
+                Log.i(TAG, "onBillingServiceDisconnected: ")
+            }
+
+            override fun onBillingSetupFinished(p0: BillingResult) {
+                Log.e(TAG, "onBillingSetupFinished: $p0", )
+            }
+
+        })
+
+
 
         val currentUser = auth.currentUser
         isAuthenticated = currentUser != null
