@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.util.*
 
-//private const val TAG = "ToDoRepositoryImpl"
+private const val TAG = "ToDoRepositoryImpl"
 
 class ToDoRepositoryImpl(
     private val toDoDao: ToDoDao,
@@ -27,16 +27,12 @@ class ToDoRepositoryImpl(
 ) : ToDoRepository {
 
 
-
-
-
-
-
     override suspend fun insertToDo(
         toDo: ToDo,
         callBack: suspend (id: Long) -> Unit
     ) {
         val id = toDoDao.insertToDo(toDo = toDo)
+        Log.e(TAG, "insertToDo: $id", )
         callBack(id)
 
     }
@@ -64,7 +60,7 @@ class ToDoRepositoryImpl(
         }
     }
 
-    override suspend fun getItemExistsInFDB(queryToDo: ToDo, callBack: (status: Boolean) -> Unit) {
+    /*override suspend fun getItemExistsInFDB(queryToDo: ToDo, callBack: (status: Boolean) -> Unit) {
         auth.currentUser?.let {
             val documentRef = fdb.collection(it.email!!).document(queryToDo.id.toString())
             documentRef.get()
@@ -77,7 +73,7 @@ class ToDoRepositoryImpl(
                 }.addOnFailureListener {
                 }
         }
-    }
+    }*/
 
 
     override suspend fun deleteToDo(deleteToDo: ToDo, callBack: suspend () -> Unit) {
@@ -101,8 +97,8 @@ class ToDoRepositoryImpl(
     }
 
 
-    override suspend fun getToDoById(id: Int): ToDo? {
-        return toDoDao.getToDoById(id = id)
+    override suspend fun getToDoById(date:Date): ToDo? {
+        return toDoDao.getToDoById(date = date)
     }
 
     override suspend fun incrementCounter() {
@@ -151,7 +147,6 @@ class ToDoRepositoryImpl(
                             val toDo = ToDo(
                                 title = title,
                                 description = description,
-                                id = id,
                                 isDone = isDone,
                                 isSyncFinished = isSyncFinished,
                                 openDate = openDate,

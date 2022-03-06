@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
                         route = Routes.ADD_EDIT_TODO + "?todoId={todoId}",
                         arguments = listOf(
                             navArgument(name = "todoId") {
-                                type = NavType.IntType
+                                type = NavType.LongType
                                 defaultValue = -1
                             }
                         )

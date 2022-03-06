@@ -47,19 +47,19 @@ fun ToDoItem(
         viewModel.toDoSyncStatus.collect { value: ToDoSyncStatus ->
             when(value){
                 is ToDoSyncStatus.SyncStarted->{
-                    if (toDo.id == value.id){
+                    if (toDo.openDate == value.openDate){
                         progressBarVisibility = 0f
                         errorVisibility = 0f
                     }
                 }
                 is ToDoSyncStatus.SyncStopped->{
-                    if (toDo.id == value.id){
+                    if (toDo.openDate == value.openDate){
                         progressBarVisibility = 0f
                         errorVisibility = 0f
                     }
                 }
                 is  ToDoSyncStatus.SyncError ->{
-                    if (toDo.id == value.id){
+                    if (toDo.openDate == value.openDate){
                         progressBarVisibility = 0f
                         errorVisibility = 0f
 

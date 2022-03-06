@@ -6,6 +6,7 @@ import java.util.*
 
 @Entity
 data class ToDo(
+    @PrimaryKey(autoGenerate = false)
     val openDate:Date,
     val closeDate: Date?=null,
     val title: String,
@@ -14,7 +15,4 @@ data class ToDo(
     val isDone:Boolean,
     @field:JvmField
     var isSyncFinished:Boolean = true,
-    @PrimaryKey
-    val id:Int?= null
-
     )

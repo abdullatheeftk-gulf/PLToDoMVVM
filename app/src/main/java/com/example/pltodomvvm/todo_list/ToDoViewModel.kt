@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pltodomvvm.data.Converters
 import com.example.pltodomvvm.data.FireToDo
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
@@ -57,10 +58,9 @@ class ToDoViewModel @Inject constructor(
                 val mToDo = Gson().fromJson(toDoInJson, ToDo::class.java)
                 viewModelScope.launch {
 
-                    repository.insertToDo(toDo = mToDo) { idLong ->
+                    repository.insertToDo(toDo = mToDo) {
                         repository.insertToDoFireStore(
                             syncToDo = FireToDo(
-                                id = idLong.toInt(),
                                 openDate = mToDo.openDate,
                                 title = mToDo.title,
                                 description = mToDo.description,
@@ -71,16 +71,17 @@ class ToDoViewModel @Inject constructor(
                         ) { fsi ->
                             when (fsi) {
                                 is FireStoreInsertState.OnProgress -> {
-                                    onEvent(ToDoListEvent.SyncInProgress(idLong.toInt()))
+                                    //change
+                                    onEvent(ToDoListEvent.SyncInProgress(openDate = mToDo.openDate))
                                 }
                                 is FireStoreInsertState.OnSuccess -> {
-                                    onEvent(ToDoListEvent.SyncInStopped(idLong.toInt()))
+                                    //change
+                                    onEvent(ToDoListEvent.SyncInStopped(openDate = mToDo.openDate))
                                     viewModelScope.launch {
                                         repository.insertToDo(
                                             ToDo(
                                                 title = fsi.inToDo.title,
                                                 description = fsi.inToDo.description,
-                                                id = fsi.inToDo.id,
                                                 openDate = mToDo.openDate,
                                                 isSyncFinished = true,
                                                 isDone = fsi.inToDo.isDone,
@@ -92,7 +93,8 @@ class ToDoViewModel @Inject constructor(
                                     }
                                 }
                                 is FireStoreInsertState.OnFailure -> {
-                                    onEvent(ToDoListEvent.SyncFailed(idLong.toInt(), fsi.exception))
+                                    //change
+                                    onEvent(ToDoListEvent.SyncFailed(openDate = mToDo.openDate, fsi.exception))
                                 }
                             }
                         }
@@ -135,7 +137,6 @@ class ToDoViewModel @Inject constructor(
                                     val mToDo = ToDo(
                                         title = fToDo.title,
                                         description = fToDo.description,
-                                        id = fToDo.id,
                                         isDone = fToDo.isDone,
                                         isSyncFinished = fToDo.isSyncFinished,
                                         openDate = fToDo.openDate,
@@ -179,7 +180,6 @@ class ToDoViewModel @Inject constructor(
                             deleteFireToDo = FireToDo(
                                 title = toDoListEvent.toDo.title,
                                 description = toDoListEvent.toDo.description,
-                                id = toDoListEvent.toDo.id!!,
                                 isDone = toDoListEvent.toDo.isDone,
                                 isSyncFinished = toDoListEvent.toDo.isSyncFinished,
                                 openDate = toDoListEvent.toDo.openDate,
@@ -199,10 +199,9 @@ class ToDoViewModel @Inject constructor(
                             isDone = toDoListEvent.isDone,
                             closeDate = toDoListEvent.closeDate,
                         )
-                    ) { id ->
+                    ) {
                         repository.insertToDoFireStore(
                             syncToDo = FireToDo(
-                                id = id.toInt(),
                                 title = toDoListEvent.toDo.title,
                                 description = toDoListEvent.toDo.description,
                                 isDone = toDoListEvent.isDone,
@@ -213,13 +212,14 @@ class ToDoViewModel @Inject constructor(
                         ) { fsi ->
                             when (fsi) {
                                 is FireStoreInsertState.OnProgress -> {
-                                    onEvent(ToDoListEvent.SyncInProgress(id.toInt()))
+
+                                    onEvent(ToDoListEvent.SyncInProgress(openDate = toDoListEvent.toDo.openDate))
                                 }
                                 is FireStoreInsertState.OnSuccess -> {
-                                    onEvent(ToDoListEvent.SyncInStopped(id.toInt()))
+                                    onEvent(ToDoListEvent.SyncInStopped(openDate = toDoListEvent.toDo.openDate))
                                 }
                                 is FireStoreInsertState.OnFailure -> {
-                                    onEvent(ToDoListEvent.SyncFailed(id.toInt(), fsi.exception))
+                                    onEvent(ToDoListEvent.SyncFailed(openDate = toDoListEvent.toDo.openDate, fsi.exception))
                                 }
                             }
 
@@ -228,17 +228,16 @@ class ToDoViewModel @Inject constructor(
                 }
             }
             is ToDoListEvent.OnToDoClick -> {
-                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=${toDoListEvent.toDo.id}"))
+                sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=${Converters().dateToTimestamp(toDoListEvent.toDo.openDate)}"))
             }
             is ToDoListEvent.OnUndoClick -> {
                 viewModelScope.launch {
                     deleteToDo?.let { insert ->
-                        repository.insertToDo(insert) { idLong ->
+                        repository.insertToDo(insert) {
                             repository.insertToDoFireStore(
                                 syncToDo = FireToDo(
                                     title = insert.title,
                                     description = insert.description,
-                                    id = insert.id!!,
                                     isDone = insert.isDone,
                                     isSyncFinished = insert.isSyncFinished,
                                     openDate = insert.openDate,
@@ -255,10 +254,10 @@ class ToDoViewModel @Inject constructor(
                 sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=-1"))
             }
             is ToDoListEvent.SyncInProgress -> {
-                sendToDoSyncStatus(ToDoSyncStatus.SyncStarted(toDoListEvent.id))
+                sendToDoSyncStatus(ToDoSyncStatus.SyncStarted(toDoListEvent.openDate))
             }
             is ToDoListEvent.SyncInStopped -> {
-                sendToDoSyncStatus(ToDoSyncStatus.SyncStopped(toDoListEvent.id))
+                sendToDoSyncStatus(ToDoSyncStatus.SyncStopped(toDoListEvent.openDate))
                /* sendUiEvent(
                     UiEvent.ShowSnackBar(
                         message = "${toDoListEvent.id} is synced to firestore"
@@ -267,7 +266,8 @@ class ToDoViewModel @Inject constructor(
 
             }
             is ToDoListEvent.SyncFailed -> {
-                sendToDoSyncStatus(ToDoSyncStatus.SyncError(id = toDoListEvent.id))
+                //change
+                sendToDoSyncStatus(ToDoSyncStatus.SyncError(openDate = toDoListEvent.openDate))
                 sendUiEvent(UiEvent.ShowSnackBar(message = toDoListEvent.exception.message))
             }
         }

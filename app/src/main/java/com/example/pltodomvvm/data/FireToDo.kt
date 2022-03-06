@@ -21,6 +21,6 @@ data class FireToDo(
     @field:JvmField
     var isSyncFinished:Boolean = true,
 
-    val id:Int
+
 
 )

@@ -108,7 +108,7 @@ fun ToDoListScreen(
                 ) {
 
                     items(items = todos, key = {
-                        it.id!!
+                        it.openDate
                     }) { toDo ->
                         ToDoItem(
                             toDo = toDo,

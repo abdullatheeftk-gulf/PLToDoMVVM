@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pltodomvvm.data.Converters
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.util.Routes
@@ -41,10 +42,10 @@ class AddEditViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
-        val toDoId = savedStateHandle.get<Int>("todoId")!!
-        if (toDoId != -1) {
+        val toDoId = savedStateHandle.get<Long>("todoId")!!
+        if (toDoId != -1L) {
             viewModelScope.launch {
-                repository.getToDoById(id = toDoId)?.let { toDo ->
+                repository.getToDoById(date = Converters().fromTimestamp(toDoId)!!)?.let { toDo ->
                     title = toDo.title
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo
@@ -82,7 +83,6 @@ class AddEditViewModel @Inject constructor(
                         title = title,
                         description = description,
                         isDone = todo?.isDone ?: false,
-                        id = todo?.id,
                         openDate = todo?.openDate ?: Date(),
                         closeDate = todo?.closeDate,
                         isSyncFinished = todo?.isSyncFinished ?: true

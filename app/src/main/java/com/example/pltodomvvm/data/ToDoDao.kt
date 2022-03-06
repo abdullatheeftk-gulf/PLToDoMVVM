@@ -2,6 +2,7 @@ package com.example.pltodomvvm.data
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 @Dao
 interface ToDoDao {
@@ -14,9 +15,9 @@ interface ToDoDao {
     @Delete
     suspend fun deleteToDo(toDo: ToDo)
 
-    @Query("SELECT * FROM ToDo WHERE id = :id")
-    suspend fun getToDoById(id:Int):ToDo?
+    @Query("SELECT * FROM ToDo WHERE openDate = :date")
+    suspend fun getToDoById(date:Date):ToDo?
 
-    @Query("SELECT * FROM ToDo ORDER BY  isDone ASC,id DESC")
+    @Query("SELECT * FROM ToDo ORDER BY  isDone ASC,openDate DESC")
     fun getTodos():Flow<List<ToDo>>
 }
