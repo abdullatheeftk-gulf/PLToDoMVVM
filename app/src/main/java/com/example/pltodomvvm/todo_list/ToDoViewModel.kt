@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -128,28 +129,34 @@ class ToDoViewModel @Inject constructor(
         try {
             viewModelScope.launch {
                 repository.getTodos().collect { listOfToDo ->
+                    Log.d(TAG, "getAllToDos: ${listOfToDo.size} $i")
+                    i++
                     _allToDos.value = RequestState.Success(listOfToDo)
-                     i++
-                    if(operationCounter<1 && i<=1){
+
+                     if( operationCounter<=1 && i<1 ){
+                         Log.i(TAG, "getAllToDos: $i $operationCounter")
                          repository.getAllToDoesFromFireStore { fireToDoList ->
-                                val toDos = mutableListOf<ToDo>()
-                                fireToDoList.forEach { fToDo ->
-                                    val mToDo = ToDo(
-                                        title = fToDo.title,
-                                        description = fToDo.description,
-                                        isDone = fToDo.isDone,
-                                        isSyncFinished = fToDo.isSyncFinished,
-                                        openDate = fToDo.openDate,
-                                        closeDate = fToDo.closeDate
-                                    )
-                                    toDos.add(mToDo)
-                                }
-                                viewModelScope.launch {
-                                    repository.insertAllToDos(toDos = toDos)
-                                }
-                                _allToDos.value = RequestState.Success(fireToDoList)
-                            }
-                    }
+                             val toDos = mutableListOf<ToDo>()
+                             fireToDoList.forEach { fToDo ->
+                                 val mToDo = ToDo(
+                                     title = fToDo.title,
+                                     description = fToDo.description,
+                                     isDone = fToDo.isDone,
+                                     isSyncFinished = fToDo.isSyncFinished,
+                                     openDate = fToDo.openDate,
+                                     closeDate = fToDo.closeDate
+                                 )
+                                 toDos.add(mToDo)
+                             }
+                             viewModelScope.launch {
+                                 repository.insertAllToDos(toDos = toDos)
+                             }
+                             _allToDos.value = RequestState.Success(fireToDoList)
+                         }
+                     }
+
+
+
 
                         
                     
