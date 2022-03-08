@@ -1,6 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -71,11 +72,11 @@ class ToDoViewModel @Inject constructor(
                         ) { fsi ->
                             when (fsi) {
                                 is FireStoreInsertState.OnProgress -> {
-                                    //change
+                                   
                                     onEvent(ToDoListEvent.SyncInProgress(openDate = mToDo.openDate))
                                 }
                                 is FireStoreInsertState.OnSuccess -> {
-                                    //change
+                                  
                                     onEvent(ToDoListEvent.SyncInStopped(openDate = mToDo.openDate))
                                     viewModelScope.launch {
                                         repository.insertToDo(
@@ -93,7 +94,7 @@ class ToDoViewModel @Inject constructor(
                                     }
                                 }
                                 is FireStoreInsertState.OnFailure -> {
-                                    //change
+                                    
                                     onEvent(ToDoListEvent.SyncFailed(openDate = mToDo.openDate, fsi.exception))
                                 }
                             }
@@ -128,9 +129,11 @@ class ToDoViewModel @Inject constructor(
         try {
             viewModelScope.launch {
                 repository.getTodos().collect { listOfToDo ->
+                    Log.e(TAG, " $operationCounter, $i, ${listOfToDo.isEmpty()}", )
                     _allToDos.value = RequestState.Success(listOfToDo)
                      i++
                     if(operationCounter<1 && i<=1){
+                        Log.e(TAG, " $operationCounter, $i, ${listOfToDo.isEmpty()}", )
                          repository.getAllToDoesFromFireStore { fireToDoList ->
                                 val toDos = mutableListOf<ToDo>()
                                 fireToDoList.forEach { fToDo ->

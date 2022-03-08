@@ -32,7 +32,6 @@ class ToDoRepositoryImpl(
         callBack: suspend (id: Long) -> Unit
     ) {
         val id = toDoDao.insertToDo(toDo = toDo)
-        Log.e(TAG, "insertToDo: $id", )
         callBack(id)
 
     }
@@ -60,20 +59,7 @@ class ToDoRepositoryImpl(
         }
     }
 
-    /*override suspend fun getItemExistsInFDB(queryToDo: ToDo, callBack: (status: Boolean) -> Unit) {
-        auth.currentUser?.let {
-            val documentRef = fdb.collection(it.email!!).document(queryToDo.id.toString())
-            documentRef.get()
-                .addOnSuccessListener { ds ->
-                    if (ds != null) {
-                        callBack(true)
-                    } else {
-                        callBack(false)
-                    }
-                }.addOnFailureListener {
-                }
-        }
-    }*/
+
 
 
     override suspend fun deleteToDo(deleteToDo: ToDo, callBack: suspend () -> Unit) {
@@ -135,7 +121,6 @@ class ToDoRepositoryImpl(
                             val description = fireMap["description"].toString()
                             val isDone = fireMap["isDone"] as Boolean
                             val isSyncFinished = fireMap["isSyncFinished"] as Boolean
-                            val id = fireMap["id"].toString().toInt()
 
                             val openDate = openTimeStamp.toDate()
                             var closeDate: Date? = closeTimestamp.toDate()
@@ -159,7 +144,7 @@ class ToDoRepositoryImpl(
                     callBack(reOrderToDoList(toDos.asReversed()))
                 }
                 .addOnFailureListener { e ->
-                    Log.e("TAG", "getAllToDoesFromFireStore: ${e.message}")
+                    Log.e(TAG, "getAllToDoesFromFireStore: ${e.message}")
                 }
 
         }
@@ -202,7 +187,6 @@ class ToDoRepositoryImpl(
 
 
     private fun reOrderToDoList(list: List<ToDo>): List<ToDo> {
-
         val reListWithIsDone = mutableListOf<ToDo>()
         val reListWithoutIsDone = mutableListOf<ToDo>()
         val reArrangedList = mutableListOf<ToDo>()
@@ -220,7 +204,6 @@ class ToDoRepositoryImpl(
         reListWithIsDone.forEach {
             reArrangedList.add(it)
         }
-
 
         return reArrangedList
     }
