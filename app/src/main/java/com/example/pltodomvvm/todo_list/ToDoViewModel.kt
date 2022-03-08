@@ -1,7 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
 
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -46,7 +45,7 @@ class ToDoViewModel @Inject constructor(
     
     private var operationCounter = 0
 
-    private var i = 0;
+
 
 
     init {
@@ -129,11 +128,8 @@ class ToDoViewModel @Inject constructor(
         try {
             viewModelScope.launch {
                 repository.getTodos().collect { listOfToDo ->
-                    Log.e(TAG, " $operationCounter, $i, ${listOfToDo.isEmpty()}", )
                     _allToDos.value = RequestState.Success(listOfToDo)
-                     i++
-                    if(operationCounter<1 && i<=1){
-                        Log.e(TAG, " $operationCounter, $i, ${listOfToDo.isEmpty()}", )
+                    if(listOfToDo.isEmpty()&&operationCounter<=1){
                          repository.getAllToDoesFromFireStore { fireToDoList ->
                                 val toDos = mutableListOf<ToDo>()
                                 fireToDoList.forEach { fToDo ->

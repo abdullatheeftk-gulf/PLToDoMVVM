@@ -13,8 +13,6 @@ interface ToDoRepository {
 
     suspend fun insertToDoFireStore(syncToDo: FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
-   // suspend fun getItemExistsInFDB(queryToDo: ToDo,callBack: (status:Boolean) -> Unit)
-
     suspend fun deleteToDo(deleteToDo: ToDo,callBack: suspend () -> Unit)
 
     suspend fun deleteFromFireStore(deleteFireToDo:FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
