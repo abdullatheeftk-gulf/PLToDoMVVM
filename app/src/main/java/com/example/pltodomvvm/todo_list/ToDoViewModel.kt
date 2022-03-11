@@ -52,9 +52,10 @@ class ToDoViewModel @Inject constructor(
 
     private var operationCounter = 0
 
+    private var toDoCounter = 0
+
 
     init {
-        setOperationCounter()
         setCounter()
         getAllToDos()
         val toDoInJson = savedStateHandle.get<String>("syncToDo")
@@ -108,7 +109,6 @@ class ToDoViewModel @Inject constructor(
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -116,11 +116,7 @@ class ToDoViewModel @Inject constructor(
 
     }
 
-    private fun setOperationCounter() {
-        viewModelScope.launch {
-            repository.incrementCounter()
-        }
-    }
+
 
     private fun setCounter() {
         viewModelScope.launch {
@@ -132,15 +128,18 @@ class ToDoViewModel @Inject constructor(
     }
 
 
+
     private fun getAllToDos() {
-
-
+        Log.w(TAG, "getAllToDos: ", )
         _allToDos.value = RequestState.Loading
         try {
             viewModelScope.launch {
                 repository.getTodos().collect { listOfToDo ->
+                    toDoCounter++
+                    Log.e(TAG, "getAllToDos: $operationCounter", )
                     _allToDos.value = RequestState.Success(listOfToDo)
-                    if (listOfToDo.isEmpty() && operationCounter <= 1) {
+                    if (listOfToDo.isEmpty() && operationCounter <= 1 && toDoCounter<=1) {
+                        Log.i(TAG, "getAllToDos: ${listOfToDo.isEmpty()}")
                         repository.getAllToDoesFromFireStore { fireToDoList ->
                             val toDos = mutableListOf<ToDo>()
                             fireToDoList.forEach { fToDo ->
@@ -192,6 +191,17 @@ class ToDoViewModel @Inject constructor(
         viewModelScope.launch {
             repository.deleteAllToDos {
                 repository.deleteAllFromFireStore()
+            }
+        }
+    }
+
+    fun signOut(){
+        repository.signOutFromFireStore {
+            viewModelScope.launch {
+                repository.deleteAllToDos {
+
+                    sendUiEvent(UiEvent.Navigate(Routes.FIREBASE_LOGIN))
+                }
             }
         }
     }

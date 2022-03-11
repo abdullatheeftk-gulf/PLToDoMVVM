@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +23,7 @@ import com.example.pltodomvvm.util.Routes
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "MainActivity"
@@ -32,7 +34,6 @@ private const val TAG = "MainActivity"
 class MainActivity : ComponentActivity() {
 
 
-
     @Inject
     lateinit var auth: FirebaseAuth
 
@@ -40,28 +41,31 @@ class MainActivity : ComponentActivity() {
     lateinit var repository: ToDoRepository
 
     @Inject
-    lateinit var fdb:FirebaseFirestore
+    lateinit var fdb: FirebaseFirestore
 
     @Inject
-    lateinit var billingClient:BillingClient
+    lateinit var billingClient: BillingClient
 
     private var isAuthenticated: Boolean = false
 
 
     override fun onStart() {
+        lifecycleScope.launch {
+            repository.incrementCounter()
+        }
+
         super.onStart()
-        
-        billingClient.startConnection(object:BillingClientStateListener{
+
+        billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingServiceDisconnected() {
                 Log.i(TAG, "onBillingServiceDisconnected: ")
             }
 
             override fun onBillingSetupFinished(p0: BillingResult) {
-                Log.e(TAG, "onBillingSetupFinished: $p0", )
+                Log.e(TAG, "onBillingSetupFinished: $p0")
             }
 
         })
-
 
 
         val currentUser = auth.currentUser
@@ -112,11 +116,23 @@ class MainActivity : ComponentActivity() {
                         )
                     ) {
 
-                        ToDoListScreen(onNavigate = {
-                            navController.navigate(it.route)
-                        },
+                        ToDoListScreen(
+                            onNavigate = {
+                                navController.navigate(it.route) {
+
+                                    Log.e(TAG, "onStart: ${it.route}")
+                                    if (it.route == Routes.FIREBASE_LOGIN) {
+                                        popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
+                                            inclusive = true
+                                        }
+                                    }
+                                }
+                            },
                         )
                     }
+
+
+
                     composable(
                         route = Routes.ADD_EDIT_TODO + "?todoId={todoId}",
                         arguments = listOf(

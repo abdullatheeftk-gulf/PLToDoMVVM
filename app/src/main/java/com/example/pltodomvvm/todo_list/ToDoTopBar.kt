@@ -22,11 +22,28 @@ fun ToDoTopBar(
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     searchTextValue: String,
     onDeleteAllClicked: () -> Unit,
+    onSignOutClicked: () -> Unit,
     setSearchTextValue: (value: String) -> Unit
 ) {
 
     var openDialog by remember {
         mutableStateOf(false)
+    }
+
+    var openSignOutDialog by remember{
+        mutableStateOf(false)
+    }
+
+    ShowAlertDialog(
+        title = "Do you want to Sign out?",
+        message = "You wil sign out from your account and your data from this mobile deleted" ,
+        openDialog = openSignOutDialog,
+        onCloseClicked = {
+            openSignOutDialog = false
+        }
+    ) {
+        onSignOutClicked()
+        openSignOutDialog = false
     }
 
     ShowAlertDialog(
@@ -43,7 +60,11 @@ fun ToDoTopBar(
 
     if (searchAppBarState == SearchAppBarState.CLOSED) {
         DefaultAppBar(
-            searchActionEvent = searchActionEvent
+            searchActionEvent = searchActionEvent,
+            onSignOutClicked = {
+                openSignOutDialog = true
+            }
+
         ){
           openDialog = true
 
@@ -63,7 +84,9 @@ fun ToDoTopBar(
 @Composable
 fun DefaultAppBar(
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
-    onDeleteAllClicked: () -> Unit
+    onSignOutClicked: () -> Unit,
+    onDeleteAllClicked: () -> Unit,
+
 ) {
     TopAppBar(
         title = {
@@ -72,7 +95,11 @@ fun DefaultAppBar(
             )
         },
         actions = {
-            DefaultAppBarActions(onDeleteAllClicked = onDeleteAllClicked) {
+            DefaultAppBarActions(
+
+                onDeleteAllClicked = onDeleteAllClicked,
+                onSignOutClicked = onSignOutClicked
+            ) {
                 searchActionEvent(SearchAppBarState.OPENED)
             }
         }
@@ -81,17 +108,24 @@ fun DefaultAppBar(
 
 @Composable
 fun DefaultAppBarActions(
+    onSignOutClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onSearchButtonClick: () -> Unit,
 ) {
     SearchAction {
         onSearchButtonClick()
     }
-    DropDownMenuActions(onDeleteAllClicked =onDeleteAllClicked )
+    DropDownMenuActions(
+        onDeleteAllClicked =onDeleteAllClicked,
+        onSignOutClicked = onSignOutClicked
+    )
 }
 
 @Composable
-fun DropDownMenuActions(onDeleteAllClicked:()->Unit) {
+fun DropDownMenuActions(
+    onDeleteAllClicked:()->Unit,
+    onSignOutClicked:()->Unit
+) {
     var expanded by remember {
         mutableStateOf(false)
     }
@@ -111,7 +145,10 @@ fun DropDownMenuActions(onDeleteAllClicked:()->Unit) {
         }
 
         DropdownMenuItem(onClick = {
-            expanded = false}
+            onSignOutClicked()
+            expanded = false
+
+        }
         ) {
 
             Text(text = "Sign Out")

@@ -120,6 +120,12 @@ class ToDoRepositoryImpl(
         }
     }
 
+    override suspend fun resetCounter() {
+        dataStore.edit { settings->
+            settings[OPERATION_COUNTER] = 1
+        }
+    }
+
     override fun getOperationCounterFlow(): Flow<Int> {
         val operationCounterFlow:Flow<Int> = dataStore.data
             .map { preferences->
@@ -209,6 +215,11 @@ class ToDoRepositoryImpl(
             .addOnFailureListener {
                 callBack(FirebaseAuthState.OnAuthFailure(it))
             }
+    }
+
+    override fun signOutFromFireStore(callBack: () -> Unit) {
+        auth.signOut()
+        callBack()
     }
 
 

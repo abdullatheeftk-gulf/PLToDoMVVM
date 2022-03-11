@@ -2,7 +2,6 @@ package com.example.pltodomvvm.todo_list
 
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
@@ -99,8 +97,8 @@ fun ToDoListScreen(
                      searchActionEvent = viewModel::searchActionEvent,
                      searchTextValue = searchTextValue,
                      setSearchTextValue = viewModel::setSearchTextValue,
-                     onDeleteAllClicked = viewModel::onDeleteAllClicked
-
+                     onDeleteAllClicked = viewModel::onDeleteAllClicked,
+                     onSignOutClicked = viewModel::signOut
                  )
         },
         floatingActionButton = {

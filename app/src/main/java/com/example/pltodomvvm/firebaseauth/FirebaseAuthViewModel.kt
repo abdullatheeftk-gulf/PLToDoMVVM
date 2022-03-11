@@ -45,7 +45,9 @@ class FirebaseAuthViewModel @Inject constructor(
                 password = firebaseAuthToDoEvent.password
             }
             is FirebaseAuthToDoEvent.OnLoginButtonClicked -> {
+
                 viewModelScope.launch {
+                    repository.resetCounter()
                     if (email.isBlank()) {
                         sendUiEvent(
                             UiEvent.ShowSnackBar(
@@ -62,6 +64,7 @@ class FirebaseAuthViewModel @Inject constructor(
                         )
                         return@launch
                     }
+
                     repository.signInWithEmailAndPassword(
                         email = email,
                         password = password
@@ -98,6 +101,7 @@ class FirebaseAuthViewModel @Inject constructor(
 
             is FirebaseAuthToDoEvent.OnRegisterButtonClicked -> {
                 viewModelScope.launch {
+                    repository.resetCounter()
                     if (email.isBlank()) {
                         sendUiEvent(
                             UiEvent.ShowSnackBar(

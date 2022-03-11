@@ -30,6 +30,9 @@ interface ToDoRepository {
 
     suspend fun incrementCounter()
 
+    suspend fun resetCounter()
+
+
     fun getOperationCounterFlow():Flow<Int>
 
 
@@ -45,4 +48,6 @@ interface ToDoRepository {
     fun createUserWithEmailAndPassword(email:String,password:String,callBack:(authState: FirebaseAuthState)->Unit)
 
     fun signInWithEmailAndPassword(email:String,password:String,callBack:(authState:FirebaseAuthState)->Unit)
+
+    fun signOutFromFireStore(callBack:()->Unit)
 }
