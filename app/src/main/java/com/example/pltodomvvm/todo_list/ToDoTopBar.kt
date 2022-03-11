@@ -4,13 +4,15 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.example.pltodomvvm.R
+import com.example.pltodomvvm.components.ShowAlertDialog
 import com.example.pltodomvvm.ui.theme.topAppBarBackgroundColor
 import com.example.pltodomvvm.util.SearchAppBarState
 
@@ -19,11 +21,33 @@ fun ToDoTopBar(
     searchAppBarState: SearchAppBarState,
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     searchTextValue: String,
+    onDeleteAllClicked: () -> Unit,
     setSearchTextValue: (value: String) -> Unit
 ) {
 
+    var openDialog by remember {
+        mutableStateOf(false)
+    }
+
+    ShowAlertDialog(
+        title ="Do you want to delete all Tasks",
+        message ="It will delete all data from the device and backend",
+        openDialog = openDialog,
+        onCloseClicked = {
+            openDialog = false
+        }
+    ) {
+        onDeleteAllClicked()
+        openDialog = false
+    }
+
     if (searchAppBarState == SearchAppBarState.CLOSED) {
-        DefaultAppBar(searchActionEvent = searchActionEvent)
+        DefaultAppBar(
+            searchActionEvent = searchActionEvent
+        ){
+          openDialog = true
+
+        }
     } else {
         SearchAppBar(
             searchActionEvent = searchActionEvent,
@@ -38,7 +62,8 @@ fun ToDoTopBar(
 
 @Composable
 fun DefaultAppBar(
-    searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit
+    searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
+    onDeleteAllClicked: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -47,7 +72,7 @@ fun DefaultAppBar(
             )
         },
         actions = {
-            DefaultAppBarActions() {
+            DefaultAppBarActions(onDeleteAllClicked = onDeleteAllClicked) {
                 searchActionEvent(SearchAppBarState.OPENED)
             }
         }
@@ -56,8 +81,54 @@ fun DefaultAppBar(
 
 @Composable
 fun DefaultAppBarActions(
+    onDeleteAllClicked: () -> Unit,
     onSearchButtonClick: () -> Unit,
 ) {
+    SearchAction {
+        onSearchButtonClick()
+    }
+    DropDownMenuActions(onDeleteAllClicked =onDeleteAllClicked )
+}
+
+@Composable
+fun DropDownMenuActions(onDeleteAllClicked:()->Unit) {
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    IconButton(onClick = { expanded = true }) {
+       Icon(imageVector = Icons.Filled.MoreVert, contentDescription ="Drop Down menu" )
+    }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false }
+    ) {
+        DropdownMenuItem(onClick = {
+            onDeleteAllClicked()
+            expanded = false}
+        ) {
+
+            Text(text = "Delete All")
+        }
+
+        DropdownMenuItem(onClick = {
+            expanded = false}
+        ) {
+
+            Text(text = "Sign Out")
+        }
+        DropdownMenuItem(onClick = {
+            expanded = false}
+        ) {
+
+            Text(text = "About")
+        }
+
+
+    }
+}
+
+@Composable
+fun SearchAction( onSearchButtonClick: () -> Unit) {
     IconButton(onClick = {
         onSearchButtonClick()
     }) {
@@ -65,8 +136,7 @@ fun DefaultAppBarActions(
             imageVector = Icons.Filled.Search,
             contentDescription = "search"
         )
-    }
-
+    } 
 }
 
 @Composable

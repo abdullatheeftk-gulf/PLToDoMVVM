@@ -19,6 +19,10 @@ interface ToDoRepository {
 
     suspend fun getToDoByDate(date:Date):ToDo?
 
+    suspend fun deleteAllToDos(callBack:suspend ()->Unit)
+
+    fun deleteAllFromFireStore()
+
 
     fun searchForToDos(text:String):Flow<List<ToDo>>
 

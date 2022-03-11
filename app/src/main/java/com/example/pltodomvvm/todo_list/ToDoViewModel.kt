@@ -188,6 +188,14 @@ class ToDoViewModel @Inject constructor(
 
     }
 
+    fun onDeleteAllClicked() {
+        viewModelScope.launch {
+            repository.deleteAllToDos {
+                repository.deleteAllFromFireStore()
+            }
+        }
+    }
+
     fun onEvent(toDoListEvent: ToDoListEvent) {
         when (toDoListEvent) {
 

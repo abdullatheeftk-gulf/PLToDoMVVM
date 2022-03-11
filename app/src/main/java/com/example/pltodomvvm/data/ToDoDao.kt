@@ -14,6 +14,9 @@ interface ToDoDao {
 
     @Delete
     suspend fun deleteToDo(toDo: ToDo)
+    
+    @Query("DELETE FROM ToDo")
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM ToDo WHERE openDate = :date")
     suspend fun getToDoByDate(date: Date): ToDo?

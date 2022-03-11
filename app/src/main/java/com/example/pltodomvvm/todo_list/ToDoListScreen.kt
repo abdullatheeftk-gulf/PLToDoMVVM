@@ -34,7 +34,6 @@ fun ToDoListScreen(
     viewModel: ToDoViewModel= hiltViewModel()
 ) {
 
-    val context = LocalContext.current
     val lazyColumnState= remember {
       mutableStateOf(LazyListState())
     }
@@ -99,7 +98,8 @@ fun ToDoListScreen(
                      searchAppBarState = searchAppBarState,
                      searchActionEvent = viewModel::searchActionEvent,
                      searchTextValue = searchTextValue,
-                     setSearchTextValue = viewModel::setSearchTextValue
+                     setSearchTextValue = viewModel::setSearchTextValue,
+                     onDeleteAllClicked = viewModel::onDeleteAllClicked
 
                  )
         },

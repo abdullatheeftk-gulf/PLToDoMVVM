@@ -87,6 +87,28 @@ class ToDoRepositoryImpl(
         return toDoDao.getToDoByDate(date = date)
     }
 
+    override suspend fun deleteAllToDos(callBack:suspend ()->Unit) {
+        toDoDao.deleteAll()
+        callBack()
+    }
+
+    override fun deleteAllFromFireStore() {
+        auth.currentUser?.let {fsu->
+            fdb.collection(fsu.email!!).get().addOnSuccessListener { querySnapShot->
+                querySnapShot.documents.forEach { documentSnapshot ->
+                   val id =  documentSnapshot.id
+                    try{
+                        fdb.collection(fsu.email!!).document(id).delete()
+                    }catch (e:Exception){
+                        Log.e(TAG, "deleteAllFromFireStore: ${e.message}", )
+                    }
+
+                }
+            }
+        }
+
+    }
+
     override fun searchForToDos(text: String): Flow<List<ToDo>> {
         return toDoDao.searchForToDos(text = text)
     }
