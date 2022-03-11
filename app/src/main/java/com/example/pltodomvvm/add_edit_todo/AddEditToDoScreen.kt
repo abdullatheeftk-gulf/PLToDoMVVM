@@ -39,8 +39,10 @@ fun AddEditToDoScreen(
     Scaffold(
         scaffoldState = scaffoldState,
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
+        topBar = {
+                 AddEditTopBar(viewModel = viewModel)
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.onEvent(AddEditToDoEvent.OnSaveToDoClick)
@@ -54,6 +56,7 @@ fun AddEditToDoScreen(
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
+                .padding(16.dp)
         ) {
             TextField(
                 value = viewModel.title,

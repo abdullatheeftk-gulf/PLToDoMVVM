@@ -17,7 +17,10 @@ interface ToDoRepository {
 
     suspend fun deleteFromFireStore(deleteFireToDo:FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
-    suspend fun getToDoById(date:Date):ToDo?
+    suspend fun getToDoByDate(date:Date):ToDo?
+
+
+    fun searchForToDos(text:String):Flow<List<ToDo>>
 
 
 

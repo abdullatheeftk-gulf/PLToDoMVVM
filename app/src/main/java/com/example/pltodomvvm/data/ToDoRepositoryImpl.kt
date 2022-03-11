@@ -83,8 +83,12 @@ class ToDoRepositoryImpl(
     }
 
 
-    override suspend fun getToDoById(date:Date): ToDo? {
-        return toDoDao.getToDoById(date = date)
+    override suspend fun getToDoByDate(date:Date): ToDo? {
+        return toDoDao.getToDoByDate(date = date)
+    }
+
+    override fun searchForToDos(text: String): Flow<List<ToDo>> {
+        return toDoDao.searchForToDos(text = text)
     }
 
     override suspend fun incrementCounter() {

@@ -45,7 +45,7 @@ class AddEditViewModel @Inject constructor(
         val toDoId = savedStateHandle.get<Long>("todoId")!!
         if (toDoId != -1L) {
             viewModelScope.launch {
-                repository.getToDoById(date = Converters().fromTimestamp(toDoId)!!)?.let { toDo ->
+                repository.getToDoByDate(date = Converters().fromTimestamp(toDoId)!!)?.let { toDo ->
                     title = toDo.title
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo

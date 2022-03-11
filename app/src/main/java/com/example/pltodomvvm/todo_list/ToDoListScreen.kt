@@ -1,6 +1,8 @@
 package com.example.pltodomvvm.todo_list
 
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
@@ -31,9 +34,13 @@ fun ToDoListScreen(
     viewModel: ToDoViewModel= hiltViewModel()
 ) {
 
+    val context = LocalContext.current
     val lazyColumnState= remember {
       mutableStateOf(LazyListState())
     }
+
+    val searchAppBarState by viewModel.searchAppBarState
+    val searchTextValue by viewModel.searchTextValue
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
 
@@ -87,6 +94,15 @@ fun ToDoListScreen(
 
     Scaffold(
         scaffoldState = scaffoldState,
+        topBar = {
+                 ToDoTopBar(
+                     searchAppBarState = searchAppBarState,
+                     searchActionEvent = viewModel::searchActionEvent,
+                     searchTextValue = searchTextValue,
+                     setSearchTextValue = viewModel::setSearchTextValue
+
+                 )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.onEvent(ToDoListEvent.OnAddToDoClick)
