@@ -180,9 +180,6 @@ class ToDoViewModel @Inject constructor(
 
     fun setSearchTextValue(value: String) {
         _searchTextValue.value = value
-        Log.i(TAG, "setSearchTextValue: ${_searchTextValue.value}")
-
-
         viewModelScope.launch {
             repository.searchForToDos("%$value%").collect {
                 _allToDos.value = RequestState.Success(it)
@@ -221,8 +218,6 @@ class ToDoViewModel @Inject constructor(
                 }
             }
             is ToDoListEvent.OnDoneChange -> {
-                _searchTextValue.value = ""
-                _searchAppBarState.value = SearchAppBarState.CLOSED
                 viewModelScope.launch {
                     repository.insertToDo(
                         toDoListEvent.toDo.copy(
