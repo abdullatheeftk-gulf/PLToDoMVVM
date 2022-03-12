@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,6 +20,7 @@ fun AddEditToDoScreen(
     viewModel: AddEditViewModel = hiltViewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
+    val title by viewModel.title.collectAsState()
 
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { value: UiEvent ->
@@ -41,7 +44,9 @@ fun AddEditToDoScreen(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
-                 AddEditTopBar(viewModel = viewModel)
+                 AddEditTopBar(
+                     viewModel = viewModel,
+                 )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -55,11 +60,12 @@ fun AddEditToDoScreen(
         }
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(16.dp)
         ) {
             TextField(
-                value = viewModel.title,
+                value =title ,
                 onValueChange = {
                     viewModel.onEvent(AddEditToDoEvent.OnTitleChange(it))
                 },

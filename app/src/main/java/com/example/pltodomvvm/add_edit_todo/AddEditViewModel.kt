@@ -15,6 +15,8 @@ import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.*
@@ -31,8 +33,12 @@ class AddEditViewModel @Inject constructor(
     var todo by mutableStateOf<ToDo?>(null)
         private set
 
-    var title by mutableStateOf("")
-        private set
+    private var _title = MutableStateFlow("")
+    val title: StateFlow<String> = _title
+
+    private var _topBarTitle = MutableStateFlow("Edit")
+    val topBarTitle:StateFlow<String> = _topBarTitle
+
 
     var description by mutableStateOf("")
         private set
@@ -46,12 +52,14 @@ class AddEditViewModel @Inject constructor(
         if (toDoId != -1L) {
             viewModelScope.launch {
                 repository.getToDoByDate(date = Converters().fromTimestamp(toDoId)!!)?.let { toDo ->
-                    title = toDo.title
+                    _title.value = toDo.title
                     description = toDo.description ?: ""
                     this@AddEditViewModel.todo = toDo
                 }
             }
 
+        }else{
+            _topBarTitle.value = "Add"
         }
 
     }
@@ -60,7 +68,7 @@ class AddEditViewModel @Inject constructor(
         when (addEditToDoEvent) {
 
             is AddEditToDoEvent.OnTitleChange -> {
-                title = addEditToDoEvent.title
+                _title.value = addEditToDoEvent.title
             }
 
             is AddEditToDoEvent.OnDescriptionChange -> {
@@ -69,7 +77,7 @@ class AddEditViewModel @Inject constructor(
 
             is AddEditToDoEvent.OnSaveToDoClick -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    if (title.isBlank()) {
+                    if (_title.value.isBlank()) {
                         sendUiEvent(
                             UiEvent.ShowSnackBar(
                                 message = "The title can't empty"
@@ -80,7 +88,7 @@ class AddEditViewModel @Inject constructor(
 
 
                     val toDoToSend = ToDo(
-                        title = title,
+                        title = _title.value,
                         description = description,
                         isDone = todo?.isDone ?: false,
                         openDate = todo?.openDate ?: Date(),
