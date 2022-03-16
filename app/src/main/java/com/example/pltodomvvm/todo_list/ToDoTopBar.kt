@@ -21,6 +21,8 @@ fun ToDoTopBar(
     searchAppBarState: SearchAppBarState,
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     searchTextValue: String,
+    isSubscribed:Boolean,
+    onSubscribeClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onSignOutClicked: () -> Unit,
     setSearchTextValue: (value: String) -> Unit
@@ -61,6 +63,8 @@ fun ToDoTopBar(
     if (searchAppBarState == SearchAppBarState.CLOSED) {
         DefaultAppBar(
             searchActionEvent = searchActionEvent,
+            onSubscribeClicked = onSubscribeClicked,
+            isSubscribed = isSubscribed,
             onSignOutClicked = {
                 openSignOutDialog = true
             }
@@ -85,6 +89,8 @@ fun ToDoTopBar(
 fun DefaultAppBar(
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     onSignOutClicked: () -> Unit,
+    isSubscribed: Boolean,
+    onSubscribeClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
 
 ) {
@@ -96,9 +102,10 @@ fun DefaultAppBar(
         },
         actions = {
             DefaultAppBarActions(
-
+                isSubscribed = isSubscribed,
                 onDeleteAllClicked = onDeleteAllClicked,
-                onSignOutClicked = onSignOutClicked
+                onSignOutClicked = onSignOutClicked,
+                onSubscribeClicked = onSubscribeClicked
             ) {
                 searchActionEvent(SearchAppBarState.OPENED)
             }
@@ -110,6 +117,8 @@ fun DefaultAppBar(
 fun DefaultAppBarActions(
     onSignOutClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
+    onSubscribeClicked: () -> Unit,
+    isSubscribed: Boolean,
     onSearchButtonClick: () -> Unit,
 ) {
     SearchAction {
@@ -117,6 +126,8 @@ fun DefaultAppBarActions(
     }
     DropDownMenuActions(
         onDeleteAllClicked =onDeleteAllClicked,
+        onSubscribeClicked = onSubscribeClicked,
+        isSubscribed = isSubscribed,
         onSignOutClicked = onSignOutClicked
     )
 }
@@ -124,7 +135,9 @@ fun DefaultAppBarActions(
 @Composable
 fun DropDownMenuActions(
     onDeleteAllClicked:()->Unit,
-    onSignOutClicked:()->Unit
+    onSubscribeClicked:()->Unit,
+    isSubscribed: Boolean,
+    onSignOutClicked:()->Unit,
 ) {
     var expanded by remember {
         mutableStateOf(false)
@@ -144,15 +157,29 @@ fun DropDownMenuActions(
             Text(text = "Delete All")
         }
 
+        if(!isSubscribed) {
+            DropdownMenuItem(onClick = {
+                onSignOutClicked()
+                expanded = false
+
+            }
+            ) {
+
+                Text(text = "Sign Out")
+            }
+        }
         DropdownMenuItem(onClick = {
-            onSignOutClicked()
+            onSubscribeClicked()
             expanded = false
-
+        }) {
+            if (isSubscribed) {
+                Text(text = "Subscribed", color = Color.Green)
+            }
+            else{
+                Text(text = "Subscribe")
+            }
         }
-        ) {
 
-            Text(text = "Sign Out")
-        }
         DropdownMenuItem(onClick = {
             expanded = false}
         ) {

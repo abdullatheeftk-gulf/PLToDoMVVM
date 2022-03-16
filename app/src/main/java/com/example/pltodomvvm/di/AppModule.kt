@@ -4,12 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.PurchasesUpdatedListener
 import com.example.pltodomvvm.data.ToDoDatabase
 import com.example.pltodomvvm.data.ToDoRepository
 import com.example.pltodomvvm.data.ToDoRepositoryImpl
@@ -29,10 +26,10 @@ private const val TAG = "AppModule"
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private val purchasesUpdatedListener =
+    /*private val purchasesUpdatedListener =
         PurchasesUpdatedListener{billingResult, mutableList ->
             Log.i(TAG, ":$billingResult $mutableList ")
-        }
+        }*/
 
     private val Context.dataStore:DataStore<Preferences> by preferencesDataStore("operation_counter")
 
@@ -62,11 +59,11 @@ object AppModule {
     @Singleton
     fun provideDataStore(app:Application) = app.dataStore
 
-    @Provides
+    /*@Provides
     @Singleton
     fun provideBillingClient(app:Application) = BillingClient.newBuilder(app.applicationContext)
         .setListener(purchasesUpdatedListener)
         .enablePendingPurchases()
-        .build()
+        .build()*/
 
 }

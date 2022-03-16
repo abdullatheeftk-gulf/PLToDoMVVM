@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.collect
 @Composable
 fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
+    onSubScribeClicked:()->Unit,
+    isSubscribed:Boolean,
     viewModel: ToDoViewModel= hiltViewModel()
 ) {
 
@@ -98,7 +100,9 @@ fun ToDoListScreen(
                      searchTextValue = searchTextValue,
                      setSearchTextValue = viewModel::setSearchTextValue,
                      onDeleteAllClicked = viewModel::onDeleteAllClicked,
-                     onSignOutClicked = viewModel::signOut
+                     onSignOutClicked = viewModel::signOut,
+                     isSubscribed = isSubscribed,
+                     onSubscribeClicked = onSubScribeClicked
                  )
         },
         floatingActionButton = {
