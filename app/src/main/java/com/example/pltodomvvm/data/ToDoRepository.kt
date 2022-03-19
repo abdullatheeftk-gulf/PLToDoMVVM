@@ -11,17 +11,17 @@ interface ToDoRepository {
 
     suspend fun insertAllToDos(toDos:List<ToDo>)
 
-    suspend fun insertToDoFireStore(syncToDo: FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
+    suspend fun insertToDoFireStore(syncToDo: FireToDo,isSubscribed:Boolean,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
     suspend fun deleteToDo(deleteToDo: ToDo,callBack: suspend () -> Unit)
 
-    suspend fun deleteFromFireStore(deleteFireToDo:FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
+    suspend fun deleteFromFireStore(deleteFireToDo:FireToDo,isSubscribed:Boolean,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 
     suspend fun getToDoByDate(date:Date):ToDo?
 
     suspend fun deleteAllToDos(callBack:suspend ()->Unit)
 
-    fun deleteAllFromFireStore()
+    fun deleteAllFromFireStore(isSubscribed:Boolean)
 
 
     fun searchForToDos(text:String):Flow<List<ToDo>>
@@ -40,7 +40,7 @@ interface ToDoRepository {
     fun getTodos(): Flow<List<ToDo>>
 
 
-    fun getAllToDoesFromFireStore(callBack:(listOfToDo:List<ToDo>)->Unit)
+    fun getAllToDoesFromFireStore(isSubscribed:Boolean,callBack:(listOfToDo:List<ToDo>)->Unit)
 
 
     //firebase auth
@@ -50,4 +50,6 @@ interface ToDoRepository {
     fun signInWithEmailAndPassword(email:String,password:String,callBack:(authState:FirebaseAuthState)->Unit)
 
     fun signOutFromFireStore(callBack:()->Unit)
+
+    suspend fun subscribedInsertFireStore(isSubscribed: Boolean,fireToDo:FireToDo,callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit)
 }

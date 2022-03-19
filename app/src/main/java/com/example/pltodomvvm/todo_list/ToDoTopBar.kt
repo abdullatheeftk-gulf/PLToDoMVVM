@@ -1,5 +1,7 @@
 package com.example.pltodomvvm.todo_list
 
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
@@ -9,36 +11,42 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.R
+import com.example.pltodomvvm.SharedViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
 import com.example.pltodomvvm.ui.theme.topAppBarBackgroundColor
 import com.example.pltodomvvm.util.SearchAppBarState
+import kotlinx.coroutines.flow.collect
 
+private const val TAG = "ToDoTopBar"
 @Composable
 fun ToDoTopBar(
     searchAppBarState: SearchAppBarState,
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     searchTextValue: String,
-    isSubscribed:Boolean,
+    sharedViewModel: SharedViewModel,
     onSubscribeClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
     onSignOutClicked: () -> Unit,
     setSearchTextValue: (value: String) -> Unit
 ) {
 
+
     var openDialog by remember {
         mutableStateOf(false)
     }
 
-    var openSignOutDialog by remember{
+    var openSignOutDialog by remember {
         mutableStateOf(false)
     }
 
     ShowAlertDialog(
         title = "Do you want to Sign out?",
-        message = "You wil sign out from your account and your data from this mobile deleted" ,
+        message = "You wil sign out from your account and your data from this mobile deleted",
         openDialog = openSignOutDialog,
         onCloseClicked = {
             openSignOutDialog = false
@@ -49,8 +57,8 @@ fun ToDoTopBar(
     }
 
     ShowAlertDialog(
-        title ="Do you want to delete all Tasks",
-        message ="It will delete all data from the device and backend",
+        title = "Do you want to delete all Tasks",
+        message = "It will delete all data from the device and backend",
         openDialog = openDialog,
         onCloseClicked = {
             openDialog = false
@@ -64,13 +72,13 @@ fun ToDoTopBar(
         DefaultAppBar(
             searchActionEvent = searchActionEvent,
             onSubscribeClicked = onSubscribeClicked,
-            isSubscribed = isSubscribed,
+            sharedViewModel = sharedViewModel,
             onSignOutClicked = {
                 openSignOutDialog = true
             }
 
-        ){
-          openDialog = true
+        ) {
+            openDialog = true
 
         }
     } else {
@@ -89,11 +97,11 @@ fun ToDoTopBar(
 fun DefaultAppBar(
     searchActionEvent: (searchAppBarState: SearchAppBarState) -> Unit,
     onSignOutClicked: () -> Unit,
-    isSubscribed: Boolean,
+    sharedViewModel: SharedViewModel,
     onSubscribeClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
 
-) {
+    ) {
     TopAppBar(
         title = {
             Text(
@@ -102,7 +110,7 @@ fun DefaultAppBar(
         },
         actions = {
             DefaultAppBarActions(
-                isSubscribed = isSubscribed,
+                sharedViewModel = sharedViewModel,
                 onDeleteAllClicked = onDeleteAllClicked,
                 onSignOutClicked = onSignOutClicked,
                 onSubscribeClicked = onSubscribeClicked
@@ -117,33 +125,41 @@ fun DefaultAppBar(
 fun DefaultAppBarActions(
     onSignOutClicked: () -> Unit,
     onDeleteAllClicked: () -> Unit,
+    sharedViewModel: SharedViewModel,
     onSubscribeClicked: () -> Unit,
-    isSubscribed: Boolean,
     onSearchButtonClick: () -> Unit,
 ) {
     SearchAction {
         onSearchButtonClick()
     }
     DropDownMenuActions(
-        onDeleteAllClicked =onDeleteAllClicked,
+        onDeleteAllClicked = onDeleteAllClicked,
         onSubscribeClicked = onSubscribeClicked,
-        isSubscribed = isSubscribed,
+        sharedViewModel = sharedViewModel,
         onSignOutClicked = onSignOutClicked
     )
 }
 
 @Composable
 fun DropDownMenuActions(
-    onDeleteAllClicked:()->Unit,
-    onSubscribeClicked:()->Unit,
-    isSubscribed: Boolean,
-    onSignOutClicked:()->Unit,
+    onDeleteAllClicked: () -> Unit,
+    onSubscribeClicked: () -> Unit,
+    sharedViewModel: SharedViewModel,
+    onSignOutClicked: () -> Unit,
 ) {
+    var isSubscribed by remember {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(key1 = true,){
+        sharedViewModel.isPurchased.collect {
+            isSubscribed = it
+        }
+    }
     var expanded by remember {
         mutableStateOf(false)
     }
     IconButton(onClick = { expanded = true }) {
-       Icon(imageVector = Icons.Filled.MoreVert, contentDescription ="Drop Down menu" )
+        Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "Drop Down menu")
     }
     DropdownMenu(
         expanded = expanded,
@@ -151,13 +167,14 @@ fun DropDownMenuActions(
     ) {
         DropdownMenuItem(onClick = {
             onDeleteAllClicked()
-            expanded = false}
+            expanded = false
+        }
         ) {
 
             Text(text = "Delete All")
         }
 
-        if(!isSubscribed) {
+        if (!isSubscribed) {
             DropdownMenuItem(onClick = {
                 onSignOutClicked()
                 expanded = false
@@ -174,14 +191,14 @@ fun DropDownMenuActions(
         }) {
             if (isSubscribed) {
                 Text(text = "Subscribed", color = Color.Green)
-            }
-            else{
+            } else {
                 Text(text = "Subscribe")
             }
         }
 
         DropdownMenuItem(onClick = {
-            expanded = false}
+            expanded = false
+        }
         ) {
 
             Text(text = "About")
@@ -192,7 +209,7 @@ fun DropDownMenuActions(
 }
 
 @Composable
-fun SearchAction( onSearchButtonClick: () -> Unit) {
+fun SearchAction(onSearchButtonClick: () -> Unit) {
     IconButton(onClick = {
         onSearchButtonClick()
     }) {
@@ -200,7 +217,7 @@ fun SearchAction( onSearchButtonClick: () -> Unit) {
             imageVector = Icons.Filled.Search,
             contentDescription = "search"
         )
-    } 
+    }
 }
 
 @Composable

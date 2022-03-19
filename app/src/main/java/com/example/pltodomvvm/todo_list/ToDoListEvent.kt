@@ -12,4 +12,5 @@ sealed class ToDoListEvent{
     data class SyncFailed(val openDate: Date,val exception: Exception):ToDoListEvent()
     object OnUndoClick:ToDoListEvent()
     object OnAddToDoClick:ToDoListEvent()
+    object Subscribed:ToDoListEvent()
 }

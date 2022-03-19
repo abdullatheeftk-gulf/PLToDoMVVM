@@ -1,9 +1,8 @@
 package com.example.pltodomvvm
 
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
@@ -25,13 +24,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-private const val TAG = "MainActivity"
+import kotlin.concurrent.thread
 
 
 @ExperimentalFoundationApi
 @AndroidEntryPoint
-class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
+class MainActivity : ComponentActivity(), BillingProcessor.IBillingHandler {
 
 
     @Inject
@@ -43,21 +41,24 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
     @Inject
     lateinit var fdb: FirebaseFirestore
 
-    //@Inject
-    //lateinit var billingClient: BillingClient
+
+    private val sharedViewModel: SharedViewModel by viewModels()
 
     private var isAuthenticated: Boolean = false
+   // private var isSubscribed = false
 
-    private var isSubscribed:Boolean = false
 
-    private lateinit var bp:BillingProcessor
-    private  var purchaseInfo: PurchaseInfo?=null
+    private lateinit var bp: BillingProcessor
+    private var purchaseInfo: PurchaseInfo? = null
 
 
     override fun onStart() {
         lifecycleScope.launch {
             repository.incrementCounter()
+
         }
+
+
 
         super.onStart()
 
@@ -67,17 +68,6 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
             this
         )
         bp.initialize()
-
-      /*  billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingServiceDisconnected() {
-                Log.i(TAG, "onBillingServiceDisconnected: ")
-            }
-
-            override fun onBillingSetupFinished(p0: BillingResult) {
-                Log.e(TAG, "onBillingSetupFinished: $p0")
-            }
-
-        })*/
 
 
         val currentUser = auth.currentUser
@@ -91,7 +81,10 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
                 ) {
                     composable(route = Routes.SPLASH_SCREEN) {
 
-                        SplashScreen(isAuthenticated = isAuthenticated) {
+                        SplashScreen(
+                            isAuthenticated = isAuthenticated,
+                            sharedViewModel = sharedViewModel
+                        ) {
                             navController.navigate(it) {
                                 popUpTo(Routes.SPLASH_SCREEN) {
                                     inclusive = true
@@ -128,11 +121,11 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
                         )
                     ) {
 
+
                         ToDoListScreen(
                             onNavigate = {
                                 navController.navigate(it.route) {
 
-                                    Log.e(TAG, "onStart: ${it.route}")
                                     if (it.route == Routes.FIREBASE_LOGIN) {
                                         popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
                                             inclusive = true
@@ -144,7 +137,8 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
                                 subscribe()
 
                             },
-                            isSubscribed = isSubscribed
+                            sharedViewModel = sharedViewModel
+
                         )
                     }
 
@@ -178,28 +172,28 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
     }
 
 
-
     override fun onProductPurchased(productId: String, details: PurchaseInfo?) {
-        Log.i(TAG, "onProductPurchased: $productId")
-        Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
+        if (details?.purchaseData?.autoRenewing!!) {
+           // isSubscribed = true
+            sharedViewModel.setIsPurchased(true)
+        } else {
+           // isSubscribed = false
+            sharedViewModel.setIsPurchased(false)
+        }
     }
 
     override fun onPurchaseHistoryRestored() {
-        Log.i(TAG, "onPurchaseHistoryRestored: ")
     }
 
     override fun onBillingError(errorCode: Int, error: Throwable?) {
-        Log.e(TAG, "onBillingError: $errorCode ",error )
     }
 
     override fun onBillingInitialized() {
-        bp.loadOwnedPurchasesFromGoogleAsync(object:BillingProcessor.IPurchasesResponseListener{
+        bp.loadOwnedPurchasesFromGoogleAsync(object : BillingProcessor.IPurchasesResponseListener {
             override fun onPurchasesSuccess() {
-                Log.w(TAG, "onPurchasesSuccess: ", )
             }
 
             override fun onPurchasesError() {
-                Log.e(TAG, "onPurchasesError: ")
             }
 
         })
@@ -207,29 +201,26 @@ class MainActivity : ComponentActivity(),BillingProcessor.IBillingHandler {
         purchaseInfo = bp.getSubscriptionPurchaseInfo("testsub")
 
         purchaseInfo?.let {
-            if (it.purchaseData.autoRenewing){
-                isSubscribed = true
-                Log.e(TAG, "onBillingInitialized:Already subscribed ", )
-                Toast.makeText(this, "Already subscribed $isSubscribed", Toast.LENGTH_SHORT).show()
-            }else{
-                isSubscribed = false
-                Log.e(TAG, "onBillingInitialized:Not subscribed ", )
-                Toast.makeText(this, "Not subscribed $isSubscribed", Toast.LENGTH_SHORT).show()
+            if (it.purchaseData.autoRenewing) {
+                sharedViewModel.setIsPurchased(true)
+            } else {
+                sharedViewModel.setIsPurchased(false)
             }
         }
 
-        if (purchaseInfo == null){
-            isSubscribed=false
-            Log.i(TAG, "onBillingInitialized:Expired ")
-            Toast.makeText(this, "Expired", Toast.LENGTH_SHORT).show()
+        if (purchaseInfo == null) {
+            sharedViewModel.setIsPurchased(false)
         }
 
 
     }
 
-    private fun subscribe(){
-        Log.i(TAG, "onStart: onSubscribe clicked")
-        bp.subscribe(this,"testsub")
+    private fun subscribe() {
+       // bp.subscribe(this, "testsub")
+        thread {
+            Thread.sleep(1000)
+            sharedViewModel.setIsPurchased(true)
+        }
     }
 
     override fun onBackPressed() {

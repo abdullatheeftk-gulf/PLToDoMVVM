@@ -43,70 +43,79 @@ class ToDoRepositoryImpl(
 
     override suspend fun insertToDoFireStore(
         syncToDo: FireToDo,
+        isSubscribed: Boolean,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
         callBack(FireStoreInsertState.OnProgress)
-        auth.currentUser?.let { firebaseUser ->
-            fdb.collection(firebaseUser.email!!)
-                .document(syncToDo.openDate.toString())
-                .set(syncToDo)
-                .addOnSuccessListener {
-                    callBack(FireStoreInsertState.OnSuccess(syncToDo))
-                }
-                .addOnFailureListener { e ->
-                    callBack(FireStoreInsertState.OnFailure(e))
-                }
+        if (isSubscribed) {
+            auth.currentUser?.let { firebaseUser ->
+                fdb.collection(firebaseUser.email!!)
+                    .document(syncToDo.openDate.toString())
+                    .set(syncToDo)
+                    .addOnSuccessListener {
+                        callBack(FireStoreInsertState.OnSuccess(syncToDo))
+                    }
+                    .addOnFailureListener { e ->
+                        callBack(FireStoreInsertState.OnFailure(e))
+                    }
+            }
         }
+
     }
 
 
-
-
-    override suspend fun deleteToDo(deleteToDo: ToDo, callBack: suspend () -> Unit) {
+    override suspend fun deleteToDo(
+        deleteToDo: ToDo,
+        callBack: suspend () -> Unit
+    ) {
         toDoDao.deleteToDo(toDo = deleteToDo)
         callBack()
     }
 
     override suspend fun deleteFromFireStore(
         deleteFireToDo: FireToDo,
+        isSubscribed: Boolean,
         callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
     ) {
-        auth.currentUser?.let { fsu ->
-            fdb.collection(fsu.email!!)
-                .document(deleteFireToDo.openDate.toString())
-                .delete()
-                .addOnSuccessListener {
-                }
-                .addOnFailureListener {
-                }
+        if (isSubscribed) {
+            auth.currentUser?.let { fsu ->
+                fdb.collection(fsu.email!!)
+                    .document(deleteFireToDo.openDate.toString())
+                    .delete()
+                    .addOnSuccessListener {
+                    }
+                    .addOnFailureListener {
+                    }
+            }
         }
     }
 
 
-    override suspend fun getToDoByDate(date:Date): ToDo? {
+    override suspend fun getToDoByDate(date: Date): ToDo? {
         return toDoDao.getToDoByDate(date = date)
     }
 
-    override suspend fun deleteAllToDos(callBack:suspend ()->Unit) {
+    override suspend fun deleteAllToDos(callBack: suspend () -> Unit) {
         toDoDao.deleteAll()
         callBack()
     }
 
-    override fun deleteAllFromFireStore() {
-        auth.currentUser?.let {fsu->
-            fdb.collection(fsu.email!!).get().addOnSuccessListener { querySnapShot->
-                querySnapShot.documents.forEach { documentSnapshot ->
-                   val id =  documentSnapshot.id
-                    try{
-                        fdb.collection(fsu.email!!).document(id).delete()
-                    }catch (e:Exception){
-                        Log.e(TAG, "deleteAllFromFireStore: ${e.message}", )
-                    }
+    override fun deleteAllFromFireStore(isSubscribed: Boolean) {
+        if (isSubscribed) {
+            auth.currentUser?.let { fsu ->
+                fdb.collection(fsu.email!!).get().addOnSuccessListener { querySnapShot ->
+                    querySnapShot.documents.forEach { documentSnapshot ->
+                        val id = documentSnapshot.id
+                        try {
+                            fdb.collection(fsu.email!!).document(id).delete()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "deleteAllFromFireStore: ${e.message}")
+                        }
 
+                    }
                 }
             }
         }
-
     }
 
     override fun searchForToDos(text: String): Flow<List<ToDo>> {
@@ -114,21 +123,21 @@ class ToDoRepositoryImpl(
     }
 
     override suspend fun incrementCounter() {
-        dataStore.edit {settings->
+        dataStore.edit { settings ->
             val currentCounterValue = settings[OPERATION_COUNTER] ?: 0
-            settings[OPERATION_COUNTER] = currentCounterValue+1
+            settings[OPERATION_COUNTER] = currentCounterValue + 1
         }
     }
 
     override suspend fun resetCounter() {
-        dataStore.edit { settings->
+        dataStore.edit { settings ->
             settings[OPERATION_COUNTER] = 1
         }
     }
 
     override fun getOperationCounterFlow(): Flow<Int> {
-        val operationCounterFlow:Flow<Int> = dataStore.data
-            .map { preferences->
+        val operationCounterFlow: Flow<Int> = dataStore.data
+            .map { preferences ->
                 preferences[OPERATION_COUNTER] ?: 0
             }
         return operationCounterFlow
@@ -138,48 +147,54 @@ class ToDoRepositoryImpl(
         return toDoDao.getTodos()
     }
 
-    override fun getAllToDoesFromFireStore(callBack: (listOfToDo: List<ToDo>) -> Unit) {
-        auth.currentUser?.let { fsu ->
-            val toDos = mutableListOf<ToDo>()
-            fdb.collection(fsu.email!!)
-                .get()
-                .addOnSuccessListener { querySnapShot ->
-                    querySnapShot.documents.forEach { documentSnapshot ->
-                        val fireMap = documentSnapshot.data
-                        try {
-                            val openTimeStamp = fireMap?.get("openDate") as Timestamp
-                            val closeTimestamp = fireMap["closeDate"] as Timestamp
-                            val title = fireMap["title"].toString()
-                            val description = fireMap["description"].toString()
-                            val isDone = fireMap["isDone"] as Boolean
-                            val isSyncFinished = fireMap["isSyncFinished"] as Boolean
+    override fun getAllToDoesFromFireStore(
+        isSubscribed: Boolean,
+        callBack: (listOfToDo: List<ToDo>) -> Unit
+    ) {
+        if (isSubscribed) {
+            auth.currentUser?.let { fsu ->
+                val toDos = mutableListOf<ToDo>()
+                fdb.collection(fsu.email!!)
+                    .get()
+                    .addOnSuccessListener { querySnapShot ->
+                        querySnapShot.documents.forEach { documentSnapshot ->
+                            val fireMap = documentSnapshot.data
+                            try {
+                                val openTimeStamp = fireMap?.get("openDate") as Timestamp
+                                val closeTimestamp = fireMap["closeDate"] as Timestamp
+                                val title = fireMap["title"].toString()
+                                val description = fireMap["description"].toString()
+                                val isDone = fireMap["isDone"] as Boolean
+                                val isSyncFinished = fireMap["isSyncFinished"] as Boolean
 
-                            val openDate = openTimeStamp.toDate()
-                            var closeDate: Date? = closeTimestamp.toDate()
+                                val openDate = openTimeStamp.toDate()
+                                var closeDate: Date? = closeTimestamp.toDate()
 
-                            if (!isDone) {
-                                closeDate = null
+                                if (!isDone) {
+                                    closeDate = null
+                                }
+
+                                val toDo = ToDo(
+                                    title = title,
+                                    description = description,
+                                    isDone = isDone,
+                                    isSyncFinished = isSyncFinished,
+                                    openDate = openDate,
+                                    closeDate = closeDate
+                                )
+                                toDos.add(toDo)
+                            } catch (e: Exception) {
                             }
-
-                            val toDo = ToDo(
-                                title = title,
-                                description = description,
-                                isDone = isDone,
-                                isSyncFinished = isSyncFinished,
-                                openDate = openDate,
-                                closeDate = closeDate
-                            )
-                            toDos.add(toDo)
-                        } catch (e: Exception) {
                         }
+                        callBack(reOrderToDoList(toDos.asReversed()))
                     }
-                    callBack(reOrderToDoList(toDos.asReversed()))
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "getAllToDoesFromFireStore: ${e.message}")
-                }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "getAllToDoesFromFireStore: ${e.message}")
+                    }
 
+            }
         }
+
     }
 
 
@@ -220,6 +235,26 @@ class ToDoRepositoryImpl(
     override fun signOutFromFireStore(callBack: () -> Unit) {
         auth.signOut()
         callBack()
+    }
+
+    override suspend fun subscribedInsertFireStore(
+        isSubscribed: Boolean,
+        fireToDo: FireToDo,
+        callBack: (fireStoreInsertState: FireStoreInsertState) -> Unit
+    ) {
+        if (isSubscribed) {
+            auth.currentUser?.let { fsu ->
+                fdb.collection(fsu.email!!)
+                    .document(fireToDo.openDate.toString())
+                    .set(fireToDo)
+                    .addOnSuccessListener {
+                        callBack(FireStoreInsertState.OnSuccess(inToDo = fireToDo))
+                    }
+                    .addOnFailureListener {
+                        callBack(FireStoreInsertState.OnFailure(it))
+                    }
+            }
+        }
     }
 
 

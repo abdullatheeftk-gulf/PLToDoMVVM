@@ -1,7 +1,6 @@
 package com.example.pltodomvvm.todo_list
 
 
-import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -16,26 +15,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.pltodomvvm.SharedViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
 import com.example.pltodomvvm.data.ToDo
 import com.example.pltodomvvm.util.RequestState
+import com.example.pltodomvvm.util.Routes
 import com.example.pltodomvvm.util.UiEvent
 import kotlinx.coroutines.flow.collect
-
-//private const val TAG = "ToDoListScreen"
 
 
 @ExperimentalFoundationApi
 @Composable
 fun ToDoListScreen(
     onNavigate: (uiEvent: UiEvent.Navigate) -> Unit,
-    onSubScribeClicked:()->Unit,
-    isSubscribed:Boolean,
-    viewModel: ToDoViewModel= hiltViewModel()
+    onSubScribeClicked: () -> Unit,
+    sharedViewModel: SharedViewModel,
+    viewModel: ToDoViewModel = hiltViewModel()
 ) {
 
-    val lazyColumnState= remember {
-      mutableStateOf(LazyListState())
+    var openSubscribeAlertDialog by remember {
+        mutableStateOf(false)
+    }
+
+
+    LaunchedEffect(key1 = true){
+        sharedViewModel.isPurchased.collect {
+            viewModel.setIsPurchased(it)
+        }
+    }
+
+
+
+    val lazyColumnState = remember {
+        mutableStateOf(LazyListState())
     }
 
     val searchAppBarState by viewModel.searchAppBarState
@@ -43,18 +55,19 @@ fun ToDoListScreen(
 
     val toDoForDelete: ToDo? by viewModel.toDoForDelete
 
-    val openDialogFlag by viewModel.openFlag
+    val openDeleteDialogFlag by viewModel.openDeleteDialogFlag
 
-    var openDialog by remember {
-        mutableStateOf(openDialogFlag)
+    var openDeleteDialog by remember {
+        mutableStateOf(openDeleteDialogFlag)
     }
 
-    LaunchedEffect(key1 = openDialog) {
-        viewModel.openFlag.value = openDialog
+    LaunchedEffect(key1 = openDeleteDialog) {
+        viewModel.openDeleteDialogFlag.value = openDeleteDialog
     }
     val allToDos by viewModel.allToDos.collectAsState()
 
     val scaffoldState = rememberScaffoldState()
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { value: UiEvent ->
             when (value) {
@@ -70,40 +83,54 @@ fun ToDoListScreen(
                 is UiEvent.Navigate -> {
                     onNavigate(value)
                 }
+                is UiEvent.ShowAlertDialog ->{
+                   openSubscribeAlertDialog = true
+                }
 
                 else -> Unit
             }
         }
     }
-    
 
+
+    ShowAlertDialog(
+        title = "Congratulation!. You have purchased",
+        message ="You should be Sign in or Register to back up your data",
+        openDialog =openSubscribeAlertDialog,
+        onCloseClicked = {
+            openSubscribeAlertDialog=false
+        }
+    ) {
+        viewModel.onEvent(ToDoListEvent.Subscribed)
+        openSubscribeAlertDialog=false
+    }
 
     ShowAlertDialog(
         title = "Do you want to delete ${toDoForDelete?.title}",
         message = "It will erase from your database & FireStore",
-        openDialog = openDialog,
+        openDialog = openDeleteDialog,
         onCloseClicked = {
-            openDialog = false
+            openDeleteDialog = false
         }) {
         toDoForDelete?.let {
             viewModel.onEvent(ToDoListEvent.DeleteToDo(it))
         }
-        openDialog = false
+        openDeleteDialog = false
     }
 
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-                 ToDoTopBar(
-                     searchAppBarState = searchAppBarState,
-                     searchActionEvent = viewModel::searchActionEvent,
-                     searchTextValue = searchTextValue,
-                     setSearchTextValue = viewModel::setSearchTextValue,
-                     onDeleteAllClicked = viewModel::onDeleteAllClicked,
-                     onSignOutClicked = viewModel::signOut,
-                     isSubscribed = isSubscribed,
-                     onSubscribeClicked = onSubScribeClicked
-                 )
+            ToDoTopBar(
+                searchAppBarState = searchAppBarState,
+                searchActionEvent = viewModel::searchActionEvent,
+                searchTextValue = searchTextValue,
+                setSearchTextValue = viewModel::setSearchTextValue,
+                onDeleteAllClicked = viewModel::onDeleteAllClicked,
+                onSignOutClicked = viewModel::signOut,
+                onSubscribeClicked = onSubScribeClicked,
+                sharedViewModel = sharedViewModel
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -142,7 +169,7 @@ fun ToDoListScreen(
                             viewModel = viewModel
                         ) { mToDo ->
                             viewModel.toDoForDelete.value = mToDo
-                            openDialog = true
+                            openDeleteDialog = true
                             scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
 
                         }
