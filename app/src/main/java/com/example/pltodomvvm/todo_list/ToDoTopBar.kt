@@ -1,7 +1,5 @@
 package com.example.pltodomvvm.todo_list
 
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.*
@@ -11,10 +9,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.pltodomvvm.R
 import com.example.pltodomvvm.SharedViewModel
 import com.example.pltodomvvm.components.ShowAlertDialog
@@ -174,7 +170,7 @@ fun DropDownMenuActions(
             Text(text = "Delete All")
         }
 
-        if (!isSubscribed) {
+        if (isSubscribed) {
             DropdownMenuItem(onClick = {
                 onSignOutClicked()
                 expanded = false

@@ -62,7 +62,14 @@ class ToDoViewModel @Inject constructor(
     init {
         setCounter()
         getAllToDos()
-        val toDoInJson = savedStateHandle.get<String>("syncToDo")
+        val toDoInJson:String? = savedStateHandle.get<String>("syncToDo")
+        val subscriptionStatus:Boolean = savedStateHandle.get<Boolean>("status")!!
+        if(subscriptionStatus){
+            subscriptionSyncDataToFireStore()
+        }
+        Log.i(TAG, "$subscriptionStatus ")
+
+
         if (toDoInJson != null) {
             if (toDoInJson.isNotEmpty()) {
                 val mToDo = Gson().fromJson(toDoInJson, ToDo::class.java)
@@ -123,13 +130,30 @@ class ToDoViewModel @Inject constructor(
 
     }
 
+    private fun subscriptionSyncDataToFireStore() {
+        viewModelScope.launch {
+             repository.getTodos().collectLatest { listOfTodo->
+                 listOfTodo.forEach { toDo ->  
+                     repository.subscribedInsertFireStore(
+                         isSubscribed = true,
+                         fireToDo = FireToDo(
+                             title = toDo.title,
+                             description = toDo.description,
+                             openDate = toDo.openDate,
+                             closeDate = toDo.closeDate,
+                             isSyncFinished = toDo.isSyncFinished,
+                             isDone = toDo.isDone
+                         )
+                     ){
+                         Log.i(TAG, "subscriptionSyncDataToFireStore: $it")
+                     }
+                 }
+             }
+         }
+    }
+
     fun setIsPurchased(flag:Boolean){
         _isSubscribed.value = flag
-        viewModelScope.launch {
-            if (flag) {
-                sendUiEvent(UiEvent.ShowAlertDialog)
-            }
-        }
     }
 
 
@@ -152,10 +176,8 @@ class ToDoViewModel @Inject constructor(
             viewModelScope.launch {
                 repository.getTodos().collect { listOfToDo ->
                     toDoCounter++
-                    Log.e(TAG, "getAllToDos: $operationCounter", )
                     _allToDos.value = RequestState.Success(listOfToDo)
                     if (listOfToDo.isEmpty() && operationCounter <= 1 && toDoCounter<=1) {
-                        Log.i(TAG, "getAllToDos: ${listOfToDo.isEmpty()}")
                         repository.getAllToDoesFromFireStore(isSubscribed = isSubScribed.value) { fireToDoList ->
                             val toDos = mutableListOf<ToDo>()
                             fireToDoList.forEach { fToDo ->
@@ -227,27 +249,12 @@ class ToDoViewModel @Inject constructor(
 
             is ToDoListEvent.Subscribed->{
                 viewModelScope.launch {
+                    repository.signOutFromFireStore {
+
+                    }
                     sendUiEvent(UiEvent.Navigate(Routes.FIREBASE_LOGIN))
                 }
-                /*viewModelScope.launch(Dispatchers.IO) {
-                   repository.getTodos().collect { listOfToDo->
-                       listOfToDo.forEach {toDo ->
-                           repository.subscribedInsertFireStore(
-                               isSubscribed = isSubScribed.value,
-                               fireToDo = FireToDo(
-                                   title = toDo.title,
-                                   description = toDo.description,
-                                   isDone = toDo.isDone,
-                                   isSyncFinished = toDo.isSyncFinished,
-                                   openDate = toDo.openDate,
-                                   closeDate = toDo.closeDate
-                               )
-                           ){
 
-                           }
-                       }
-                   }
-                }*/
             }
 
             is ToDoListEvent.DeleteToDo -> {

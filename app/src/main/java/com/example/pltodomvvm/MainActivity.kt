@@ -112,11 +112,15 @@ class MainActivity : ComponentActivity(), BillingProcessor.IBillingHandler {
                     }
 
                     composable(
-                        route = Routes.TODO_LIST + "?syncToDo={syncToDo}",
+                        route = Routes.TODO_LIST + "?syncToDo={syncToDo}&isSubscribed={status}",
                         arguments = listOf(
                             navArgument(name = "syncToDo") {
                                 type = NavType.StringType
                                 defaultValue = ""
+                            },
+                            navArgument(name = "status"){
+                                type = NavType.BoolType
+                                defaultValue = false
                             }
                         )
                     ) {
@@ -127,7 +131,7 @@ class MainActivity : ComponentActivity(), BillingProcessor.IBillingHandler {
                                 navController.navigate(it.route) {
 
                                     if (it.route == Routes.FIREBASE_LOGIN) {
-                                        popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
+                                        popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}&isSubscribed={status}") {
                                             inclusive = true
                                         }
                                     }
@@ -156,7 +160,7 @@ class MainActivity : ComponentActivity(), BillingProcessor.IBillingHandler {
 
                         AddEditToDoScreen(onNavigate = {
                             navController.navigate(it) {
-                                popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}") {
+                                popUpTo(route = Routes.TODO_LIST + "?syncToDo={syncToDo}&isSubscribed={status}") {
                                     inclusive = true
                                 }
 
@@ -174,10 +178,8 @@ class MainActivity : ComponentActivity(), BillingProcessor.IBillingHandler {
 
     override fun onProductPurchased(productId: String, details: PurchaseInfo?) {
         if (details?.purchaseData?.autoRenewing!!) {
-           // isSubscribed = true
             sharedViewModel.setIsPurchased(true)
         } else {
-           // isSubscribed = false
             sharedViewModel.setIsPurchased(false)
         }
     }

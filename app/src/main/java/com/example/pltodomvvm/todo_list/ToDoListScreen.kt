@@ -90,6 +90,20 @@ fun ToDoListScreen(
                 else -> Unit
             }
         }
+
+
+    }
+
+    LaunchedEffect(key1 = true){
+        sharedViewModel.uiEvent.collect {value: UiEvent ->
+            when(value){
+                is UiEvent.ShowAlertDialog ->{
+                    openSubscribeAlertDialog = true
+                }
+
+                else -> Unit
+            }
+        }
     }
 
 

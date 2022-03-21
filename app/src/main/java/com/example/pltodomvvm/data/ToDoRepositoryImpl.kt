@@ -233,7 +233,10 @@ class ToDoRepositoryImpl(
     }
 
     override fun signOutFromFireStore(callBack: () -> Unit) {
-        auth.signOut()
+        auth.currentUser?.let {
+            auth.signOut()
+        }
+
         callBack()
     }
 

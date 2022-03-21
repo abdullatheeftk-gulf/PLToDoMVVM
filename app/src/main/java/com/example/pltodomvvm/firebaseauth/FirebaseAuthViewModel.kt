@@ -133,8 +133,9 @@ class FirebaseAuthViewModel @Inject constructor(
                         when (authState) {
                             is FirebaseAuthState.OnAuthSuccess -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
+                                val flag = true
 
-                                sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST))
+                                sendUiEvent(UiEvent.Navigate(Routes.TODO_LIST+"?isSubscribed=${flag}"))
                             }
                             is FirebaseAuthState.OnAuthFailure -> {
                                 sendUiEvent(UiEvent.CloseProgressBar)
